@@ -6067,11 +6067,12 @@ function setAlarm(slotKey, slotLabel) { openPhoneAlarm(slotKey, slotLabel); }
 
 function getSuppSlotKey(s) {
   const t = (s.timing || '').toLowerCase();
-  if (t.includes('bed')) return 'bedtime';
   if (t.includes('pre-workout') || t.includes('pre workout')) return 'preworkout';
   if (t.includes('post-workout') || t.includes('post workout')) return 'postworkout';
-  if (t.includes('lunch')) return 'lunch';
+  if (t.includes('fasted walk') || t.includes('cardio')) return 'preworkout';
   if (t.includes('breakfast') || t.includes('morning')) return 'morning';
+  if (t.includes('bed')) return 'bedtime';
+  if (t.includes('lunch') || t.includes('dinner')) return 'lunch';
   if (t.includes('evening')) return 'evening';
   if (t.includes('meal') || t.includes('food')) return 'lunch';
   return 'morning';
@@ -6167,48 +6168,93 @@ function quickAddFromGuide(name, dose, timing) {
 
 
 const DEFAULT_SUPPS = [
-  // PERFORMANCE - TIER 1
-  { name: 'Creatine Monohydrate', dose: '5g', timing: 'Any time', cycle: 'daily', notes: 'Plain monohydrate. Bulk Powders/MyProtein. ~€10 for 500g.' },
-  { name: 'Whey Protein', dose: '1 scoop (25-30g protein)', timing: 'Post-workout', cycle: 'training', notes: 'Only when food protein is short. MyProtein Impact Whey.' },
-  { name: 'Caffeine', dose: '200-300mg', timing: 'Pre-workout', cycle: 'weekdays', notes: 'Coffee works perfectly. Cut off at 13:00. Cycle 5on/2off to avoid tolerance.' },
-  // PERFORMANCE - TIER 2
-  { name: 'Citrulline Malate 2:1', dose: '6-8g', timing: 'Pre-workout', cycle: 'training', notes: 'natural elements 500g — amazon.de/dp/B0C6YC5QBX. Take 30-45 min pre-training. Mix in water.' },
-  // TESTOSTERONE - TIER 1 (Critical for Vienna + your profile)
-  { name: 'Vitamin D3 + K2', dose: 'D3: 4000 IU + K2: 100mcg', timing: 'With breakfast', cycle: 'daily', notes: 'PRIORITY #1. Vienna sunlight insufficient. dm/Bipa/Apotheke. ~€10-15.' },
-  { name: 'Zinc Bisglycinate', dose: '25-30mg elemental zinc', timing: 'With food', cycle: 'daily', notes: 'NOT on empty stomach. Bisglycinate or picolinate form only. dm/Bipa.' },
-  { name: 'Magnesium Glycinate', dose: '300-400mg', timing: 'Before bed', cycle: 'daily', notes: 'Improves sleep AND testosterone. Glycinate form not oxide. dm/Bipa.' },
-  // TESTOSTERONE - TIER 2
-  { name: 'Ashwagandha KSM-66', dose: '600mg', timing: 'With food', cycle: 'cycle', weeksOn: 8, weeksOff: 4, cycleStart: new Date().toISOString().split('T')[0], notes: 'Bulk Powders 90 caps — amazon.de/dp/B081YWDJYL. 8w on / 4w off. HIGH PRIORITY for cortisol and stress.' },
-  { name: 'D-Aspartic Acid (DAA)', dose: '2-3g', timing: 'Morning with food', cycle: 'cycle', weeksOn: 12, weeksOff: 4, notes: 'Stimulates LH and testosterone production. Take in morning. Cycle 12w on / 4w off — continuous use loses effect. Stack well with Ashwagandha.' },
-  { name: 'Boron', dose: '10mg', timing: 'With food', cycle: 'daily', notes: 'Bor Max 365 tabs — amazon.de/dp/B0C4TFQLJG. Raises free testosterone by reducing SHBG. 1 tab/day.' },
-  { name: 'Fenugreek Extract', dose: '500mg', timing: 'With meals', cycle: 'daily', notes: 'Inhibits aromatase. Maple syrup smell in sweat — harmless. dm/Bipa.' },
-  { name: 'Omega-3', dose: '2-3g EPA+DHA', timing: 'With meals', cycle: 'daily', notes: 'Reduces inflammation, supports recovery and hormones. Any pharmacy.' },
-  // NEXT CYCLE (after first Ashwagandha cycle ends)
-  { name: 'Tongkat Ali — Next Cycle', dose: '400-600mg standardized', timing: 'Morning with food', cycle: 'cycle', weeksOn: 8, weeksOff: 4, cycleStart: new Date(Date.now() + 84*24*60*60*1000).toISOString().split('T')[0], notes: 'Use your current package first. Hard to find and expensive — stretch it. Start after Ashwagandha cycle ends. Direct LH/testosterone boost.' },
+  // ===== DAILY CORE =====
+  { cat: 'core', name: 'Vitamin D3 + K2', dose: 'D3 4000 IU + K2 100mcg (drops or caps)', timing: 'With breakfast', cycle: 'daily', notes: 'PRIORITY #1. You have drops + D3 20.000 Depot (take Depot 1x/week instead of daily if using that one).' },
+  { cat: 'core', name: 'Zinc Bisglycinate', dose: '25-30mg', timing: 'With food', cycle: 'daily', notes: 'WeightWorld bottle. NOT on empty stomach. Skip on nights you take ZMA.' },
+  { cat: 'core', name: 'Magnesium Glycinate', dose: '300-400mg', timing: 'Before bed', cycle: 'daily', notes: 'NaturElan big bottle. Skip on nights you take ZMA or Magtein.' },
+  { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3g EPA+DHA (fish oil) OR 2 caps krill', timing: 'With meals', cycle: 'daily', notes: 'You have WeightWorld Fish Oil + Bandini Krill. Alternate or finish fish oil first. Krill has better absorption + astaxanthin.' },
+  { cat: 'core', name: 'Creatine Monohydrate', dose: '5g', timing: 'Any time', cycle: 'daily', notes: 'BioTechUSA 300g. Every day including rest days.' },
+  { cat: 'core', name: 'Boron (Bor Max)', dose: '10mg (1 tab)', timing: 'With food', cycle: 'daily', notes: 'GEN Bor Max 365 tabs. Lowers SHBG, raises free testosterone.' },
+  { cat: 'core', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach or before bed', cycle: 'daily', notes: 'You have Probiona Komplex + Probiotic 11. Finish one before opening the other. Gut health = nutrient absorption.' },
+  { cat: 'core', name: 'Vitamin C Liposomal', dose: '1100-2200mg', timing: 'With breakfast', cycle: 'daily', notes: 'Kika Naturals. Immunity + collagen + cortisol support. Half dose is fine daily.' },
+  // ===== TRAINING DAYS =====
+  { cat: 'training', name: 'Pre-Workout (ON Gold Standard)', dose: '1 shot (175mg caffeine + 1.5g beta-alanine)', timing: '20-30 min pre-workout', cycle: 'training', notes: 'OR plain caffeine OR coffee — never combine. Cutoff 13:00. Tingling from beta-alanine is normal.' },
+  { cat: 'training', name: 'Caffeine (GymBeam)', dose: '200mg', timing: 'Pre-workout', cycle: 'training', notes: 'Alternative to Pre-Workout shot on lighter days. 5on/2off pattern. Cutoff 13:00.' },
+  { cat: 'training', name: 'Citrulline Malate 2:1', dose: '6-8g', timing: '30-45 min pre-workout', cycle: 'training', notes: 'natural elements L-Citrullin. Mix in water. Stacks fine with caffeine/pre-workout.' },
+  { cat: 'training', name: 'Whey Protein (ESN Designer)', dose: '1 scoop (25-30g)', timing: 'Post-workout', cycle: 'training', notes: 'Only when food protein falls short of 190g target.' },
+  { cat: 'training', name: 'L-Glutamine', dose: '5g', timing: 'Post-workout or before bed', cycle: 'training', notes: 'GEN 750g powder. Gut + recovery support. Modest evidence — use it up, no need to rebuy.' },
+  { cat: 'training', name: 'BCAA + Glutamine Xpress', dose: '1 scoop', timing: 'During fasted training only', cycle: 'training', notes: 'Scitec. ONLY useful if training fasted. If you eat protein before gym, skip — redundant with food.' },
+  { cat: 'training', name: 'L-Carnitine', dose: '2-3g (liquid or tabs)', timing: 'Before fasted walk or cardio', cycle: 'training', notes: 'Wehle 6000 liquid + Mivolis tabs. Best for fasted morning walks. Modest fat-loss aid.' },
+  // ===== T-ROTATION BLOCK A (8 weeks) =====
+  { cat: 'rotA', name: 'Ashwagandha KSM-66', dose: '600mg (Bulk caps)', timing: 'With lunch or dinner', cycle: 'rotation', notes: 'BLOCK A. Cortisol killer — your #1 priority. Bulk 500mg KSM-66 caps.' },
+  { cat: 'rotA', name: 'D-Aspartic Acid (DAA)', dose: '2-3g powder', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK A. GymBeam 250g. Stimulates LH. Works best in first 2-4 weeks.' },
+  // ===== T-ROTATION BLOCK B (8 weeks) =====
+  { cat: 'rotB', name: 'Tongkat Ali (Red or Black)', dose: '400-600mg', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK B. You have Red + Black (Herbs by Sonja). Use one at a time. Direct LH boost.' },
+  { cat: 'rotB', name: 'Maca', dose: '1.5-3g', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK B. AAVALABS Maca Complex or Helden Kraft. Libido + energy, not direct T.' },
+  { cat: 'rotB', name: 'Fadogia Agrestis ⚠️', dose: '300-500mg MAX', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK B. ⚠️ CAUTION: limited human safety data, animal studies show testicular toxicity at high doses. Max 4 weeks within the block, then stop. Never run continuously.' },
+  // ===== T-ROTATION BLOCK C (8 weeks) =====
+  { cat: 'rotC', name: 'Tribulus Max 95%', dose: '1-2 caps (not full 4500mg serving)', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK C. GEN 95% saponins. Libido more than T. Start low.' },
+  { cat: 'rotC', name: 'Shilajit', dose: '1 cap (Boderra or Himalayan)', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK C. You have 2 brands — finish one first. Fulvic acid + minerals + modest T evidence.' },
+  { cat: 'rotC', name: 'Pine Pollen', dose: '2-3 caps', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK C. Herbs by Sonja. Natural phytoandrogens. Weak evidence but you own it — use within block.' },
+  { cat: 'rotC', name: 'Akarkara', dose: '1-2 caps (500mg)', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK C. Herbs by Sonja, Mount Atlas daisy. Ayurvedic libido herb. Situational — date nights work too.' },
+  // ===== NOOTROPIC / ADAPTOGEN — pick 1-2 max =====
+  { cat: 'noot', name: 'Lion\'s Mane Complex', dose: '2 caps (18000mg 30:1)', timing: 'Morning', cycle: 'optional', notes: 'AAVALABS. Focus + nerve health. Best for deep work days. Includes Cordyceps + Reishi already.' },
+  { cat: 'noot', name: 'Cordyceps', dose: '2 caps (10:1 extract)', timing: 'Morning or pre-workout', cycle: 'optional', notes: 'Sunny Nature. Endurance + energy. Good on tennis/swim days. Skip if taking Lion\'s Mane Complex (already included).' },
+  { cat: 'noot', name: 'Rhodiola Rosea', dose: '1 cap (5000mg 10:1)', timing: 'Morning', cycle: 'optional', notes: 'ONENERGY. Anti-fatigue adaptogen. Use during stressful work weeks. Don\'t stack daily with Ashwagandha — alternate.' },
+  { cat: 'noot', name: 'Ginkgo + Korean Ginseng', dose: '1-2 caps', timing: 'Morning', cycle: 'optional', notes: 'NootroVita. Circulation + cognition. Use on heavy mental work days. You also have plain Panax Ginseng — same purpose, pick one.' },
+  { cat: 'noot', name: 'Multivitamin Complex', dose: '1 cap', timing: 'With breakfast', cycle: 'optional', notes: 'AAVALABS. Contains Ashwagandha + Rhodiola already — careful double-dosing. Use on poor-diet days only, not daily (your food covers most).' },
+  { cat: 'noot', name: 'Moringa', dose: '1-2 caps', timing: 'With food', cycle: 'optional', notes: 'RedMoringa Tribulus+Maca combo. Greens micronutrients. Low priority — use up, don\'t rebuy.' },
+  // ===== SLEEP =====
+  { cat: 'sleep', name: 'Magnesium L-Threonate (Magtein)', dose: '2-3 caps (2000mg)', timing: '1h before bed', cycle: 'optional', notes: 'ProFuel. Crosses blood-brain barrier — better for sleep quality + cognition than glycinate. On Magtein nights, skip regular Magnesium Glycinate.' },
+  { cat: 'sleep', name: 'ZMA Max', dose: '2-3 caps', timing: 'Empty stomach before bed', cycle: 'optional', notes: 'GEN. Zinc+Mag+B6. On ZMA nights skip separate Zinc AND Magnesium — full overlap. Use when sleep is poor or training is heavy.' },
 ];
 
 function getSupplements() {
+  // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
+  const version = localStorage.getItem('supp_stack_version');
+  if (version !== '2') {
+    const saved = localStorage.getItem('supplements');
+    let customs = [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Keep any supplement the user added manually that isn't in the new default stack
+        customs = parsed.filter(p => p.userAdded && !DEFAULT_SUPPS.find(d => d.name === p.name));
+      } catch(e) {}
+    }
+    const newStack = [...DEFAULT_SUPPS, ...customs];
+    localStorage.setItem('supplements', JSON.stringify(newStack));
+    localStorage.setItem('supp_stack_version', '2');
+    // Initialize rotation if not set
+    if (!localStorage.getItem('trot_block')) {
+      localStorage.setItem('trot_block', 'A');
+      localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
+    }
+    return newStack;
+  }
   const saved = localStorage.getItem('supplements');
   if (!saved) { localStorage.setItem('supplements', JSON.stringify(DEFAULT_SUPPS)); return DEFAULT_SUPPS; }
-  const parsed = JSON.parse(saved);
-  if (parsed.length <= 5 && !parsed.find(s => s.name.includes('Zinc') || s.name.includes('Ashwagandha'))) {
-    localStorage.setItem('supplements', JSON.stringify(DEFAULT_SUPPS));
-    return DEFAULT_SUPPS;
-  }
-  // Migration: remove Beta-Alanine and HMB if present
-  const cleaned = parsed.filter(s => !s.name.includes('Beta-Alanine') && !s.name.includes('HMB'));
-  // Migration: add DAA if missing
-  if (!cleaned.find(s => s.name.includes('D-Aspartic') || s.name.includes('DAA'))) {
-    const daa = { name: 'D-Aspartic Acid (DAA)', dose: '2-3g', timing: 'Morning with food', cycle: 'cycle', weeksOn: 12, weeksOff: 4, notes: 'Stimulates LH and testosterone production. Take in morning. Cycle 12w on / 4w off. Stack well with Ashwagandha.' };
-    const ashIdx = cleaned.findIndex(s => s.name.includes('Ashwagandha'));
-    if (ashIdx >= 0) cleaned.splice(ashIdx + 1, 0, daa);
-    else cleaned.push(daa);
-  }
-  if (cleaned.length !== parsed.length || !parsed.find(s => s.name.includes('D-Aspartic'))) {
-    localStorage.setItem('supplements', JSON.stringify(cleaned));
-    return cleaned;
-  }
-  return parsed;
+  return JSON.parse(saved);
+}
+
+// ── T-ROTATION BLOCK SYSTEM ────────────────────────────────
+function getRotBlock() { return localStorage.getItem('trot_block') || 'A'; }
+function getRotStart() { return localStorage.getItem('trot_start') || new Date().toISOString().split('T')[0]; }
+
+function setRotBlock(block) {
+  localStorage.setItem('trot_block', block);
+  localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
+  renderSuppToday();
+  renderSuppStack();
+  showToast('Switched to Block ' + block + ' — 8 week timer started');
+}
+
+function getRotStatus() {
+  const start = new Date(getRotStart());
+  const now = new Date();
+  const daysIn = Math.floor((now - start) / 86400000);
+  const daysLeft = 56 - daysIn;  // 8 weeks
+  return { block: getRotBlock(), daysIn, daysLeft, expired: daysLeft <= 0 };
 }
 
 function saveSupplements(supps) { localStorage.setItem('supplements', JSON.stringify(supps)); }
@@ -6225,6 +6271,12 @@ function toggleCycleConfig() {
 
 function isSuppActive(supp) {
   if (supp.cycle === 'daily' || supp.cycle === 'weekdays' || supp.cycle === 'training') return true;
+  if (supp.cycle === 'rotation') {
+    // Active only if its block is the current rotation block
+    const blockMap = { rotA: 'A', rotB: 'B', rotC: 'C' };
+    return blockMap[supp.cat] === getRotBlock();
+  }
+  if (supp.cycle === 'optional') return true;  // shown but marked situational
   if (supp.cycle === 'cycle' && supp.cycleStart && supp.weeksOn && supp.weeksOff) {
     const start = new Date(supp.cycleStart);
     const now = new Date();
@@ -6260,32 +6312,81 @@ function initSupplements() {
   renderSuppAdherence();
 }
 
+const SUPP_CATEGORIES = [
+  { key: 'core', label: '🟢 Daily Core', sub: 'Every day, non-negotiable' },
+  { key: 'training', label: '💥 Training Days', sub: 'Only on gym/cardio days' },
+  { key: 'rot', label: '🔄 T-Booster Rotation', sub: '' },
+  { key: 'noot', label: '🧠 Nootropic / Adaptogen', sub: 'Pick 1-2 max based on the day — not all' },
+  { key: 'sleep', label: '🌙 Sleep (situational)', sub: 'When sleep is poor or training heavy. Watch overlaps.' },
+];
+
 function renderSuppToday() {
   const supps = getSupplements();
   const log = getSuppLog();
   const today = getTodayKey();
   const todayLog = log[today] || {};
   const list = document.getElementById('supp-today-list');
-  const active = supps.filter(s => isSuppActive(s));
-  if (active.length === 0) { list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:10px 0">No active supplements. Add some below.</div>'; return; }
-  list.innerHTML = '';
-  active.forEach((s, i) => {
-    const idx = supps.indexOf(s);
-    const checked = todayLog[idx];
-    const div = document.createElement('div');
-    div.className = 'supp-item';
-    const cycleStatus = getCycleStatus(s);
-    div.innerHTML = `
-      <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">
-        ${checked ? '✓' : ''}
-      </div>
-      <div class="supp-item-info">
-        <div class="supp-item-name">${s.name}</div>
-        <div class="supp-item-meta">${s.dose} · ${s.timing}</div>
-        ${cycleStatus ? `<div class="supp-item-cycle ${cycleStatus.on ? '' : 'off'}">${cycleStatus.text}</div>` : ''}
+  if (!list) return;
+  const rot = getRotStatus();
+
+  let html = '';
+  SUPP_CATEGORIES.forEach(cat => {
+    let items;
+    if (cat.key === 'rot') {
+      items = supps.map((s, idx) => ({ s, idx })).filter(x => (x.s.cat || '').startsWith('rot') && isSuppActive(x.s));
+    } else {
+      items = supps.map((s, idx) => ({ s, idx })).filter(x => (x.s.cat || 'core') === cat.key);
+    }
+    if (items.length === 0 && cat.key !== 'rot') return;
+
+    html += `<div style="margin-top:18px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.3px">${cat.label}</div>
+      ${cat.sub ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${cat.sub}</div>` : ''}
+    </div>`;
+
+    // Rotation block switcher
+    if (cat.key === 'rot') {
+      html += `<div style="background:var(--surface);border:1px solid ${rot.expired ? 'var(--orange)' : 'var(--border)'};border-radius:var(--r);padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600;color:var(--text)">Current: Block ${rot.block}</div>
+          <div style="font-size:11px;color:${rot.expired ? 'var(--orange)' : 'var(--accent)'};font-weight:600">${rot.expired ? '⚠️ Block finished — switch!' : rot.daysLeft + 'd left'}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${['A','B','C'].map(b => `<button onclick="setRotBlock('${b}')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${b === rot.block ? 'var(--accent)' : 'var(--border2)'};background:${b === rot.block ? 'var(--accent)' : 'var(--surface2)'};color:${b === rot.block ? '#000' : 'var(--text3)'}">${b}</button>`).join('')}
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">A: Ashwagandha + DAA · B: Tongkat + Maca + Fadogia · C: Tribulus + Shilajit + Pine Pollen + Akarkara<br>8 weeks per block → switch → 1 week nothing between blocks is even better.</div>
       </div>`;
-    list.appendChild(div);
+    }
+
+    items.forEach(({ s, idx }) => {
+      const checked = todayLog[idx];
+      html += `<div class="supp-item">
+        <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
+        <div class="supp-item-info">
+          <div class="supp-item-name">${s.name}</div>
+          <div class="supp-item-meta">${s.dose} · ${s.timing}</div>
+        </div>
+      </div>`;
+    });
   });
+
+  // User-added customs (no cat)
+  const customs = supps.map((s, idx) => ({ s, idx })).filter(x => !x.s.cat && x.s.userAdded);
+  if (customs.length) {
+    html += `<div style="margin-top:18px;margin-bottom:8px"><div style="font-size:12px;font-weight:700;color:var(--text)">➕ My additions</div></div>`;
+    customs.forEach(({ s, idx }) => {
+      const checked = todayLog[idx];
+      html += `<div class="supp-item">
+        <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
+        <div class="supp-item-info">
+          <div class="supp-item-name">${s.name}</div>
+          <div class="supp-item-meta">${s.dose} · ${s.timing}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  list.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:10px 0">No supplements.</div>';
 }
 
 function toggleSuppCheck(idx) {
@@ -6304,20 +6405,43 @@ function toggleSuppCheck(idx) {
 function renderSuppStack() {
   const supps = getSupplements();
   const list = document.getElementById('supp-stack-list');
-  list.innerHTML = '';
-  supps.forEach((s, i) => {
-    const div = document.createElement('div');
-    div.className = 'supp-item';
-    const cycleText = s.cycle === 'cycle' ? `${s.weeksOn}w on / ${s.weeksOff}w off` : s.cycle;
-    div.innerHTML = `
-      <div class="supp-item-info">
-        <div class="supp-item-name">${s.name}</div>
-        <div class="supp-item-meta">${s.dose} · ${s.timing} · ${cycleText}</div>
-        ${s.notes ? `<div class="supp-item-meta" style="color:var(--text3)">${s.notes}</div>` : ''}
-      </div>
-      <button class="supp-delete" onclick="deleteSupplement(${i})">×</button>`;
-    list.appendChild(div);
+  if (!list) return;
+  const catLabels = { core: '🟢 Daily Core', training: '💥 Training Days', rotA: '🔄 Rotation Block A', rotB: '🔄 Rotation Block B', rotC: '🔄 Rotation Block C', noot: '🧠 Nootropic / Adaptogen', sleep: '🌙 Sleep' };
+  const order = ['core','training','rotA','rotB','rotC','noot','sleep'];
+  let html = '';
+  order.forEach(catKey => {
+    const items = supps.map((s,i)=>({s,i})).filter(x => (x.s.cat||'') === catKey);
+    if (!items.length) return;
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text);margin:16px 0 8px">${catLabels[catKey]}</div>`;
+    items.forEach(({s,i}) => {
+      const cycleText = s.cycle === 'rotation' ? 'rotation block' : (s.cycle === 'cycle' ? `${s.weeksOn}w on / ${s.weeksOff}w off` : s.cycle);
+      html += `<div class="supp-item">
+        <div class="supp-item-info">
+          <div class="supp-item-name">${s.name}</div>
+          <div class="supp-item-meta">${s.dose} · ${s.timing} · ${cycleText}</div>
+          ${s.notes ? `<div class="supp-item-meta" style="color:var(--text3)">${s.notes}</div>` : ''}
+        </div>
+        <button class="supp-delete" onclick="deleteSupplement(${i})">×</button>
+      </div>`;
+    });
   });
+  // Customs
+  const customs = supps.map((s,i)=>({s,i})).filter(x => !x.s.cat);
+  if (customs.length) {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text);margin:16px 0 8px">➕ My additions</div>`;
+    customs.forEach(({s,i}) => {
+      const cycleText = s.cycle === 'cycle' ? `${s.weeksOn}w on / ${s.weeksOff}w off` : s.cycle;
+      html += `<div class="supp-item">
+        <div class="supp-item-info">
+          <div class="supp-item-name">${s.name}</div>
+          <div class="supp-item-meta">${s.dose} · ${s.timing} · ${cycleText}</div>
+          ${s.notes ? `<div class="supp-item-meta" style="color:var(--text3)">${s.notes}</div>` : ''}
+        </div>
+        <button class="supp-delete" onclick="deleteSupplement(${i})">×</button>
+      </div>`;
+    });
+  }
+  list.innerHTML = html;
 }
 
 function renderSuppAdherence() {
@@ -6330,7 +6454,7 @@ function renderSuppAdherence() {
     const d = new Date(); d.setDate(d.getDate() - i);
     last7.push(d.toISOString().split('T')[0]);
   }
-  const active = supps.filter(s => isSuppActive(s));
+  const active = supps.filter(s => isSuppActive(s) && ['core','training','rotA','rotB','rotC'].includes(s.cat || 'core'));
   if (active.length === 0) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   container.innerHTML = '';
@@ -6356,7 +6480,7 @@ function addSupplement() {
   const cycle = document.getElementById('supp-cycle').value;
   const notes = document.getElementById('supp-notes').value.trim();
   if (!name) { showToast('Enter supplement name'); return; }
-  const supp = { name, dose: dose || '—', timing, cycle, notes };
+  const supp = { name, dose: dose || '—', timing, cycle, notes, userAdded: true };
   if (cycle === 'cycle') {
     supp.weeksOn = parseInt(document.getElementById('supp-weeks-on').value) || 8;
     supp.weeksOff = parseInt(document.getElementById('supp-weeks-off').value) || 4;
