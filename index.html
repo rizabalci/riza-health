@@ -6249,6 +6249,7 @@ const DEFAULT_SUPPS = [
   { cat: 'training', name: 'L-Glutamine', dose: '5g', timing: 'Post-workout or before bed', cycle: 'training', notes: 'GEN 750g powder. Gut + recovery support. Modest evidence — use it up, no need to rebuy.' },
   { cat: 'training', name: 'BCAA + Glutamine Xpress', dose: '1 scoop', timing: 'During fasted training only', cycle: 'training', notes: 'Scitec. ONLY useful if training fasted. If you eat protein before gym, skip — redundant with food.' },
   { cat: 'training', name: 'L-Carnitine', dose: '2-3g (liquid or tabs)', timing: 'Before fasted walk or cardio', cycle: 'training', notes: 'Wehle 6000 liquid + Mivolis tabs. Best for fasted morning walks. Modest fat-loss aid.' },
+  { cat: 'training', name: 'MCT C8 Oil', dose: '1 tbsp (start with 1 tsp)', timing: 'Morning coffee or before fasted cardio', cycle: 'optional', notes: 'BrainEffect C8. Clean ketone energy + appetite control. ~100 kcal/tbsp — counts toward your 2500 daily. Too much too fast = stomach upset. Great in black morning coffee.' },
   // ===== T-ROTATION BLOCK A (8 weeks) =====
   { cat: 'rotA', name: 'Ashwagandha KSM-66', dose: '600mg (Bulk caps)', timing: 'With lunch or dinner', cycle: 'rotation', notes: 'BLOCK A. Cortisol killer — your #1 priority. Bulk 500mg KSM-66 caps.' },
   { cat: 'rotA', name: 'D-Aspartic Acid (DAA)', dose: '2-3g powder', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK A. GymBeam 250g. Stimulates LH. Works best in first 2-4 weeks.' },
@@ -6276,7 +6277,7 @@ const DEFAULT_SUPPS = [
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '2') {
+  if (version !== '3') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6288,7 +6289,7 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '2');
+    localStorage.setItem('supp_stack_version', '3');
     // Initialize rotation if not set
     if (!localStorage.getItem('trot_block')) {
       localStorage.setItem('trot_block', 'A');
