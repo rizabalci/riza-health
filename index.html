@@ -5948,18 +5948,14 @@ function renderAlarmButtons(slotMap) {
             <div style="font-size:13px;font-weight:600;color:var(--text)">${slot.label}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px">${suppNames || slot.subtitle}</div>
           </div>
-          ${alarmSet ? '<div style="font-size:11px;color:var(--accent);font-weight:600">⏰ Set</div>' : ''}
+          ${alarmSet ? '<div style="font-size:11px;color:var(--accent);font-weight:600">✓ Added</div>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="time" value="${savedTime}" onchange="saveAlarmTime('${slot.key}', this.value)"
             style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;width:105px">
-          <button onclick="openPhoneAlarm('${slot.key}','${slot.label}')"
+          <button onclick="addSlotToCalendar('${slot.key}','${slot.label.replace(/'/g, "\\'")}')"
             style="flex:1;padding:9px 10px;background:var(--accent);color:#000;font-weight:700;font-size:12px;border:none;border-radius:8px;cursor:pointer;touch-action:manipulation">
-            📱 Set on Phone
-          </button>
-          <button onclick="copyAlarmDetails('${slot.key}')"
-            style="padding:9px 12px;background:var(--surface2);color:var(--text2);font-size:12px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;touch-action:manipulation">
-            Copy
+            📅 Add to Calendar
           </button>
         </div>
       </div>`;
@@ -5967,23 +5963,46 @@ function renderAlarmButtons(slotMap) {
 
   if (!status) return;
   status.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:4px">
-      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">⚡ How to set up — takes 2 min once</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.8">
-        For each slot above:<br>
-        1. Adjust the time if needed<br>
-        2. Tap <strong style="color:var(--accent)">📱 Set on Phone</strong> — opens Clock app<br>
-        3. Add alarm at that time · Label: supplement names<br>
-        4. Set <strong>Repeat: Every day</strong> · Save<br><br>
-        Native phone alarms work even when the app is closed. That's the only way to get truly reliable daily reminders.
-      </div>
-    </div>
-    <div style="margin-top:8px">
-      <button onclick="exportSuppICS()" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">
-        📅 Add all to Calendar (ICS)
+    <div style="margin-top:4px">
+      <button onclick="exportSuppICS()" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--r);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">
+        📅 Add ALL slots at once
       </button>
     </div>
-    <div style="margin-top:8px" id="notif-btn-area">${getNotifButtonHTML()}</div>`;
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">📲 How it works on iPhone</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.8">
+        1. Tap <strong style="color:var(--accent)">📅 Add to Calendar</strong> on a slot<br>
+        2. iPhone opens a calendar preview → tap <strong style="color:var(--text)">Add All</strong><br>
+        3. Done — a daily repeating event with an alert at that exact time, supplement names in the title.<br><br>
+        Calendar alerts fire even when this app is closed — same effect as an alarm. To change a time later: adjust it here, delete the old event in Calendar, re-add.
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">⏰ Prefer real Clock alarms?</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7">Ask Siri once per slot: <em style="color:var(--text)">"Set a daily alarm at 07:30 called supplements"</em> — fastest way to create repeating Clock alarms on iPhone.</div>
+    </div>`;
+}
+
+function addSlotToCalendar(slotKey, slotLabel) {
+  const time = (localStorage.getItem(`alarm_${slotKey}`) || SUPP_TIME_SLOTS.find(s => s.key === slotKey)?.time || '08:00');
+  const supps = getSupplements().filter(s => isSuppActive(s) && getSuppSlotKey(s) === slotKey);
+  const summary = '💊 ' + (supps.map(s => s.name).join(' + ') || slotLabel);
+  const desc = supps.map(s => `${s.name}: ${s.dose}`).join('\\n') || slotLabel;
+  const t = time.replace(':', '') + '00';
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Riza Health//Supp//EN\n' +
+    `BEGIN:VEVENT\nUID:supp-${slotKey}-${Date.now()}@riza-health\nSUMMARY:${summary}\nDESCRIPTION:${desc}\n` +
+    `DTSTART;TZID=Europe/Vienna:${today}T${t}\nDURATION:PT5M\nRRULE:FREQ=DAILY\n` +
+    `BEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:${summary}\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+  localStorage.setItem(`alarm_set_${slotKey}`, '1');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = `supplements_${slotKey}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showToast('Opening calendar file — tap "Add All"');
+  renderSuppSchedule();
 }
 
 function getNotifButtonHTML() {
@@ -6016,14 +6035,59 @@ function openPhoneAlarm(slotKey, slotLabel) {
   const label = supps.map(s => s.name).join(' + ') || slotLabel;
 
   if (isAndroid) {
-    window.location.href = `intent://alarm?hour=${h}&minutes=${m}&message=${encodeURIComponent('💊 ' + label)}&vibrate=true&skip_ui=false#Intent;scheme=android.intent.action;action=android.intent.action.SET_ALARM;package=com.google.android.deskclock;end`;
-  } else if (isIOS) {
-    window.location.href = 'clock-alarm://';
-    setTimeout(() => showToast(`In Clock: add alarm at ${time} · label: ${label} · repeat: daily`), 600);
+    // Correct Android intent extras syntax: i.=int, S.=string, B.=boolean
+    const intentUrl = 'intent://#Intent;action=android.intent.action.SET_ALARM;' +
+      'i.android.intent.extra.alarm.HOUR=' + h + ';' +
+      'i.android.intent.extra.alarm.MINUTES=' + m + ';' +
+      'S.android.intent.extra.alarm.MESSAGE=' + encodeURIComponent('💊 ' + label).replace(/;/g, '') + ';' +
+      'B.android.intent.extra.alarm.SKIP_UI=false;end';
+    try { window.location.href = intentUrl; } catch(e) {}
+    setTimeout(() => showAlarmInstructions(time, label), 1200);
   } else {
-    showToast(`Set alarm at ${time} in your Clock app — label: ${label}`);
+    // iOS blocks opening Clock app from web — show instructions instead
+    showAlarmInstructions(time, label);
   }
   renderSuppSchedule();
+}
+
+function showAlarmInstructions(time, label) {
+  // Remove any existing modal
+  const existing = document.getElementById('alarm-instr-modal');
+  if (existing) existing.remove();
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const modal = document.createElement('div');
+  modal.id = 'alarm-instr-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:24px';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;max-width:340px;width:100%">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">⏰ Set this alarm</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:16px">${isIOS ? 'iPhone blocks web apps from opening the Clock app, so set it manually — 30 seconds:' : 'If the Clock app did not open, set it manually:'}</div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--text3)">Time</span>
+          <span style="font-size:15px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace">${time}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:12px">
+          <span style="font-size:12px;color:var(--text3);flex-shrink:0">Label</span>
+          <span style="font-size:12px;color:var(--text);text-align:right">💊 ${label}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--text3)">Repeat</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text)">Every day</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:16px">
+        1. Open the <strong style="color:var(--text)">Clock</strong> app${isIOS ? ' (or ask Siri: "Set a daily alarm at ' + time + '")' : ''}<br>
+        2. Add alarm at <strong style="color:var(--accent)">${time}</strong><br>
+        3. Set label + repeat daily → Save
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="navigator.clipboard?.writeText('💊 ${label.replace(/'/g, "\\'")}').then(()=>showToast('Label copied'))" style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer">Copy label</button>
+        <button onclick="document.getElementById('alarm-instr-modal').remove()" style="flex:1;padding:11px;background:var(--accent);border:none;border-radius:10px;color:#000;font-weight:700;font-size:13px;cursor:pointer">Done</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 function copyAlarmDetails(slotKey) {
