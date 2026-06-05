@@ -5693,7 +5693,7 @@ const SUPP_GUIDE = {
       name: 'Citrulline Malate',
       tier: 'tier2', tierLabel: 'Tier 2 — Good evidence',
       purpose: 'Increases nitric oxide, improving blood flow, pump, and reducing fatigue in later sets. More effective than arginine.',
-      dose: '6-8g (2:1 ratio)', timing: '30-45 min pre-workout', cycle: 'Training days only',
+      dose: '6-8g (2:1 ratio)', timing: 'Morning, 30-45 min pre-workout', cycle: 'Training days only',
       price: '€15-20 for 250g',
       note: 'Usually underdosed in pre-workout blends. Buy standalone for correct dose.',
       noteType: '',
@@ -5860,12 +5860,8 @@ function switchSuppTab(tab) {
 
 // ── SUPPLEMENT SCHEDULE & ALARMS ──────────────────────────
 const SUPP_TIME_SLOTS = [
-  { key: 'morning',    label: '🌅 Morning',        subtitle: 'On waking / with water',    time: '07:30', timings: ['Morning', 'With breakfast', 'Any time'] },
-  { key: 'preworkout', label: '💥 Pre-workout',     subtitle: '30–45 min before training', time: '08:30', timings: ['Pre-workout'] },
-  { key: 'lunch',      label: '🥗 With lunch',      subtitle: 'Midday meal',               time: '13:00', timings: ['With lunch', 'With meals', 'With food'] },
-  { key: 'postworkout',label: '🏋️ Post-workout',    subtitle: 'Within 30 min of training', time: '10:30', timings: ['Post-workout'] },
-  { key: 'evening',    label: '🌆 Evening',         subtitle: 'With dinner',               time: '19:00', timings: ['Evening', 'Any time'] },
-  { key: 'bedtime',    label: '🌙 Before bed',      subtitle: '30–60 min before sleep',    time: '22:30', timings: ['Before bed'] },
+  { key: 'morning', label: '🌅 Morning', subtitle: 'With breakfast — everything except sleep stack', time: '07:30', timings: ['Morning'] },
+  { key: 'evening', label: '🌙 Evening', subtitle: 'With dinner / before bed — magnesium + sleep stack', time: '21:30', timings: ['Evening'] },
 ];
 
 function renderSuppSchedule() {
@@ -6131,14 +6127,7 @@ function setAlarm(slotKey, slotLabel) { openPhoneAlarm(slotKey, slotLabel); }
 
 function getSuppSlotKey(s) {
   const t = (s.timing || '').toLowerCase();
-  if (t.includes('pre-workout') || t.includes('pre workout')) return 'preworkout';
-  if (t.includes('post-workout') || t.includes('post workout')) return 'postworkout';
-  if (t.includes('fasted walk') || t.includes('cardio')) return 'preworkout';
-  if (t.includes('breakfast') || t.includes('morning')) return 'morning';
-  if (t.includes('bed')) return 'bedtime';
-  if (t.includes('lunch') || t.includes('dinner')) return 'lunch';
-  if (t.includes('evening')) return 'evening';
-  if (t.includes('meal') || t.includes('food')) return 'lunch';
+  if (t.includes('bed') || t.includes('evening') || t.includes('dinner') || t.includes('sleep')) return 'evening';
   return 'morning';
 }
 
@@ -6233,51 +6222,51 @@ function quickAddFromGuide(name, dose, timing) {
 
 const DEFAULT_SUPPS = [
   // ===== DAILY CORE =====
-  { cat: 'core', name: 'Vitamin D3 + K2', dose: 'D3 4000 IU + K2 100mcg (drops or caps)', timing: 'With breakfast', cycle: 'daily', notes: 'PRIORITY #1. You have drops + D3 20.000 Depot (take Depot 1x/week instead of daily if using that one).' },
-  { cat: 'core', name: 'Zinc Bisglycinate', dose: '25-30mg', timing: 'With food', cycle: 'daily', notes: 'WeightWorld bottle. NOT on empty stomach. Skip on nights you take ZMA.' },
-  { cat: 'core', name: 'Magnesium Glycinate', dose: '300-400mg', timing: 'Before bed', cycle: 'daily', notes: 'NaturElan big bottle. Skip on nights you take ZMA or Magtein.' },
-  { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3g EPA+DHA (fish oil) OR 2 caps krill', timing: 'With meals', cycle: 'daily', notes: 'You have WeightWorld Fish Oil + Bandini Krill. Alternate or finish fish oil first. Krill has better absorption + astaxanthin.' },
-  { cat: 'core', name: 'Creatine Monohydrate', dose: '5g', timing: 'Any time', cycle: 'daily', notes: 'BioTechUSA 300g. Every day including rest days.' },
-  { cat: 'core', name: 'Boron (Bor Max)', dose: '10mg (1 tab)', timing: 'With food', cycle: 'daily', notes: 'GEN Bor Max 365 tabs. Lowers SHBG, raises free testosterone.' },
-  { cat: 'core', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach or before bed', cycle: 'daily', notes: 'You have Probiona Komplex + Probiotic 11. Finish one before opening the other. Gut health = nutrient absorption.' },
-  { cat: 'core', name: 'Vitamin C Liposomal', dose: '1100-2200mg', timing: 'With breakfast', cycle: 'daily', notes: 'Kika Naturals. Immunity + collagen + cortisol support. Half dose is fine daily.' },
+  { cat: 'core', name: 'Vitamin D3 + K2', dose: '4 drops (or 1× 20.000 Depot tab every 5 days)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'PRIORITY #1. You have drops + D3 20.000 Depot (take Depot 1x/week instead of daily if using that one).' },
+  { cat: 'core', name: 'Zinc Bisglycinate', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'daily', notes: 'WeightWorld bottle. NOT on empty stomach. Skip on nights you take ZMA.' },
+  { cat: 'core', name: 'Magnesium Glycinate', dose: '2-3 caps', timing: 'Evening before bed', cycle: 'daily', notes: 'NaturElan big bottle. Skip on nights you take ZMA or Magtein.' },
+  { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3 fish oil caps OR 2 krill caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'You have WeightWorld Fish Oil + Bandini Krill. Alternate or finish fish oil first. Krill has better absorption + astaxanthin.' },
+  { cat: 'core', name: 'Creatine Monohydrate', dose: '1 scoop (5g)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'BioTechUSA 300g. Every day including rest days.' },
+  { cat: 'core', name: 'Boron (Bor Max)', dose: '1 tab', timing: 'Morning with breakfast', cycle: 'daily', notes: 'GEN Bor Max 365 tabs. Lowers SHBG, raises free testosterone.' },
+  { cat: 'core', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach', cycle: 'daily', notes: 'You have Probiona Komplex + Probiotic 11. Finish one before opening the other. Gut health = nutrient absorption.' },
+  { cat: 'core', name: 'Vitamin C Liposomal', dose: '1-2 caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'Kika Naturals. Immunity + collagen + cortisol support. Half dose is fine daily.' },
   // ===== TRAINING DAYS =====
-  { cat: 'training', name: 'Pre-Workout (ON Gold Standard)', dose: '1 shot (175mg caffeine + 1.5g beta-alanine)', timing: '20-30 min pre-workout', cycle: 'training', notes: 'OR plain caffeine OR coffee — never combine. Cutoff 13:00. Tingling from beta-alanine is normal.' },
-  { cat: 'training', name: 'Caffeine (GymBeam)', dose: '200mg', timing: 'Pre-workout', cycle: 'training', notes: 'Alternative to Pre-Workout shot on lighter days. 5on/2off pattern. Cutoff 13:00.' },
-  { cat: 'training', name: 'Citrulline Malate 2:1', dose: '6-8g', timing: '30-45 min pre-workout', cycle: 'training', notes: 'natural elements L-Citrullin. Mix in water. Stacks fine with caffeine/pre-workout.' },
-  { cat: 'training', name: 'Whey Protein (ESN Designer)', dose: '1 scoop (25-30g)', timing: 'Post-workout', cycle: 'training', notes: 'Only when food protein falls short of 190g target.' },
-  { cat: 'training', name: 'L-Glutamine', dose: '5g', timing: 'Post-workout or before bed', cycle: 'training', notes: 'GEN 750g powder. Gut + recovery support. Modest evidence — use it up, no need to rebuy.' },
-  { cat: 'training', name: 'BCAA + Glutamine Xpress', dose: '1 scoop', timing: 'During fasted training only', cycle: 'training', notes: 'Scitec. ONLY useful if training fasted. If you eat protein before gym, skip — redundant with food.' },
-  { cat: 'training', name: 'L-Carnitine', dose: '2-3g (liquid or tabs)', timing: 'Before fasted walk or cardio', cycle: 'training', notes: 'Wehle 6000 liquid + Mivolis tabs. Best for fasted morning walks. Modest fat-loss aid.' },
-  { cat: 'training', name: 'MCT C8 Oil', dose: '1 tbsp (start with 1 tsp)', timing: 'Morning coffee or before fasted cardio', cycle: 'optional', notes: 'BrainEffect C8. Clean ketone energy + appetite control. ~100 kcal/tbsp — counts toward your 2500 daily. Too much too fast = stomach upset. Great in black morning coffee.' },
+  { cat: 'training', name: 'Pre-Workout (ON Gold Standard)', dose: '1 shot', timing: 'Morning, 20-30 min pre-workout', cycle: 'training', notes: 'OR plain caffeine OR coffee — never combine. Cutoff 13:00. Tingling from beta-alanine is normal.' },
+  { cat: 'training', name: 'Caffeine (GymBeam)', dose: '1 tab (200mg)', timing: 'Morning pre-workout', cycle: 'training', notes: 'Alternative to Pre-Workout shot on lighter days. 5on/2off pattern. Cutoff 13:00.' },
+  { cat: 'training', name: 'Citrulline Malate 2:1', dose: '1.5-2 tsp powder (6-8g)', timing: 'Morning, 30-45 min pre-workout', cycle: 'training', notes: 'natural elements L-Citrullin. Mix in water. Stacks fine with caffeine/pre-workout.' },
+  { cat: 'training', name: 'Whey Protein (ESN Designer)', dose: '1 scoop', timing: 'Morning post-workout', cycle: 'training', notes: 'Only when food protein falls short of 190g target.' },
+  { cat: 'training', name: 'L-Glutamine', dose: '1 scoop / 1 level tsp (5g)', timing: 'Morning post-workout', cycle: 'training', notes: 'GEN 750g powder. Gut + recovery support. Modest evidence — use it up, no need to rebuy.' },
+  { cat: 'training', name: 'BCAA + Glutamine Xpress', dose: '1 scoop', timing: 'Morning, during fasted training only', cycle: 'training', notes: 'Scitec. ONLY useful if training fasted. If you eat protein before gym, skip — redundant with food.' },
+  { cat: 'training', name: 'L-Carnitine', dose: '1 measuring cap liquid (~25ml) OR 2 tabs', timing: 'Morning before fasted walk/cardio', cycle: 'training', notes: 'Wehle 6000 liquid + Mivolis tabs. Best for fasted morning walks. Modest fat-loss aid.' },
+  { cat: 'training', name: 'MCT C8 Oil', dose: '1 tbsp (start with 1 tsp)', timing: 'Morning coffee', cycle: 'optional', notes: 'BrainEffect C8. Clean ketone energy + appetite control. ~100 kcal/tbsp — counts toward your 2500 daily. Too much too fast = stomach upset. Great in black morning coffee.' },
   // ===== T-ROTATION BLOCK A (8 weeks) =====
-  { cat: 'rotA', name: 'Ashwagandha KSM-66', dose: '600mg (Bulk caps)', timing: 'With lunch or dinner', cycle: 'rotation', notes: 'BLOCK A. Cortisol killer — your #1 priority. Bulk 500mg KSM-66 caps.' },
-  { cat: 'rotA', name: 'D-Aspartic Acid (DAA)', dose: '2-3g powder', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK A. GymBeam 250g. Stimulates LH. Works best in first 2-4 weeks.' },
+  { cat: 'rotA', name: 'Ashwagandha KSM-66', dose: '1 cap (500mg KSM-66)', timing: 'Evening with dinner', cycle: 'rotation', notes: 'BLOCK A. Cortisol killer — your #1 priority. Bulk 500mg KSM-66 caps.' },
+  { cat: 'rotA', name: 'D-Aspartic Acid (DAA)', dose: '1 level tsp powder (3g)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK A. GymBeam 250g. Stimulates LH. Works best in first 2-4 weeks.' },
   // ===== T-ROTATION BLOCK B (8 weeks) =====
-  { cat: 'rotB', name: 'Tongkat Ali (Red or Black)', dose: '400-600mg', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK B. You have Red + Black (Herbs by Sonja). Use one at a time. Direct LH boost.' },
-  { cat: 'rotB', name: 'Maca', dose: '1.5-3g', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK B. AAVALABS Maca Complex or Helden Kraft. Libido + energy, not direct T.' },
-  { cat: 'rotB', name: 'Fadogia Agrestis ⚠️', dose: '300-500mg MAX', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK B. ⚠️ CAUTION: limited human safety data, animal studies show testicular toxicity at high doses. Max 4 weeks within the block, then stop. Never run continuously.' },
+  { cat: 'rotB', name: 'Tongkat Ali (Red or Black)', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK B. You have Red + Black (Herbs by Sonja). Use one at a time. Direct LH boost.' },
+  { cat: 'rotB', name: 'Maca', dose: '2-3 caps', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK B. AAVALABS Maca Complex or Helden Kraft. Libido + energy, not direct T.' },
+  { cat: 'rotB', name: 'Fadogia Agrestis ⚠️', dose: '1 cap MAX (500mg)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK B. ⚠️ CAUTION: limited human safety data, animal studies show testicular toxicity at high doses. Max 4 weeks within the block, then stop. Never run continuously.' },
   // ===== T-ROTATION BLOCK C (8 weeks) =====
-  { cat: 'rotC', name: 'Tribulus Max 95%', dose: '1-2 caps (not full 4500mg serving)', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK C. GEN 95% saponins. Libido more than T. Start low.' },
-  { cat: 'rotC', name: 'Shilajit', dose: '1 cap (Boderra or Himalayan)', timing: 'Morning with food', cycle: 'rotation', notes: 'BLOCK C. You have 2 brands — finish one first. Fulvic acid + minerals + modest T evidence.' },
+  { cat: 'rotC', name: 'Tribulus Max 95%', dose: '1-2 caps (NOT the full 6-cap serving)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK C. GEN 95% saponins. Libido more than T. Start low.' },
+  { cat: 'rotC', name: 'Shilajit', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK C. You have 2 brands — finish one first. Fulvic acid + minerals + modest T evidence.' },
   { cat: 'rotC', name: 'Pine Pollen', dose: '2-3 caps', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK C. Herbs by Sonja. Natural phytoandrogens. Weak evidence but you own it — use within block.' },
-  { cat: 'rotC', name: 'Akarkara', dose: '1-2 caps (500mg)', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK C. Herbs by Sonja, Mount Atlas daisy. Ayurvedic libido herb. Situational — date nights work too.' },
+  { cat: 'rotC', name: 'Akarkara', dose: '1-2 caps', timing: 'Morning', cycle: 'rotation', notes: 'BLOCK C. Herbs by Sonja, Mount Atlas daisy. Ayurvedic libido herb. Situational — date nights work too.' },
   // ===== NOOTROPIC / ADAPTOGEN — pick 1-2 max =====
-  { cat: 'noot', name: 'Lion\'s Mane Complex', dose: '2 caps (18000mg 30:1)', timing: 'Morning', cycle: 'optional', notes: 'AAVALABS. Focus + nerve health. Best for deep work days. Includes Cordyceps + Reishi already.' },
-  { cat: 'noot', name: 'Cordyceps', dose: '2 caps (10:1 extract)', timing: 'Morning or pre-workout', cycle: 'optional', notes: 'Sunny Nature. Endurance + energy. Good on tennis/swim days. Skip if taking Lion\'s Mane Complex (already included).' },
-  { cat: 'noot', name: 'Rhodiola Rosea', dose: '1 cap (5000mg 10:1)', timing: 'Morning', cycle: 'optional', notes: 'ONENERGY. Anti-fatigue adaptogen. Use during stressful work weeks. Don\'t stack daily with Ashwagandha — alternate.' },
+  { cat: 'noot', name: 'Lion\'s Mane Complex', dose: '2 caps', timing: 'Morning', cycle: 'optional', notes: 'AAVALABS. Focus + nerve health. Best for deep work days. Includes Cordyceps + Reishi already.' },
+  { cat: 'noot', name: 'Cordyceps', dose: '2 caps', timing: 'Morning', cycle: 'optional', notes: 'Sunny Nature. Endurance + energy. Good on tennis/swim days. Skip if taking Lion\'s Mane Complex (already included).' },
+  { cat: 'noot', name: 'Rhodiola Rosea', dose: '1 cap', timing: 'Morning', cycle: 'optional', notes: 'ONENERGY. Anti-fatigue adaptogen. Use during stressful work weeks. Don\'t stack daily with Ashwagandha — alternate.' },
   { cat: 'noot', name: 'Ginkgo + Korean Ginseng', dose: '1-2 caps', timing: 'Morning', cycle: 'optional', notes: 'NootroVita. Circulation + cognition. Use on heavy mental work days. You also have plain Panax Ginseng — same purpose, pick one.' },
-  { cat: 'noot', name: 'Multivitamin Complex', dose: '1 cap', timing: 'With breakfast', cycle: 'optional', notes: 'AAVALABS. Contains Ashwagandha + Rhodiola already — careful double-dosing. Use on poor-diet days only, not daily (your food covers most).' },
-  { cat: 'noot', name: 'Moringa', dose: '1-2 caps', timing: 'With food', cycle: 'optional', notes: 'RedMoringa Tribulus+Maca combo. Greens micronutrients. Low priority — use up, don\'t rebuy.' },
+  { cat: 'noot', name: 'Multivitamin Complex', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'optional', notes: 'AAVALABS. Contains Ashwagandha + Rhodiola already — careful double-dosing. Use on poor-diet days only, not daily (your food covers most).' },
+  { cat: 'noot', name: 'Moringa', dose: '1-2 caps', timing: 'Morning with breakfast', cycle: 'optional', notes: 'RedMoringa Tribulus+Maca combo. Greens micronutrients. Low priority — use up, don\'t rebuy.' },
   // ===== SLEEP =====
-  { cat: 'sleep', name: 'Magnesium L-Threonate (Magtein)', dose: '2-3 caps (2000mg)', timing: '1h before bed', cycle: 'optional', notes: 'ProFuel. Crosses blood-brain barrier — better for sleep quality + cognition than glycinate. On Magtein nights, skip regular Magnesium Glycinate.' },
-  { cat: 'sleep', name: 'ZMA Max', dose: '2-3 caps', timing: 'Empty stomach before bed', cycle: 'optional', notes: 'GEN. Zinc+Mag+B6. On ZMA nights skip separate Zinc AND Magnesium — full overlap. Use when sleep is poor or training is heavy.' },
+  { cat: 'sleep', name: 'Magnesium L-Threonate (Magtein)', dose: '3 caps', timing: 'Evening 1h before bed', cycle: 'optional', notes: 'ProFuel. Crosses blood-brain barrier — better for sleep quality + cognition than glycinate. On Magtein nights, skip regular Magnesium Glycinate.' },
+  { cat: 'sleep', name: 'ZMA Max', dose: '3 caps', timing: 'Evening empty stomach', cycle: 'optional', notes: 'GEN. Zinc+Mag+B6. On ZMA nights skip separate Zinc AND Magnesium — full overlap. Use when sleep is poor or training is heavy.' },
 ];
 
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '3') {
+  if (version !== '5') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6289,7 +6278,7 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '3');
+    localStorage.setItem('supp_stack_version', '5');
     // Initialize rotation if not set
     if (!localStorage.getItem('trot_block')) {
       localStorage.setItem('trot_block', 'A');
