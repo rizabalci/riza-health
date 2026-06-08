@@ -5868,31 +5868,25 @@ const SUPP_TIME_SLOTS = [
 ];
 
 function renderSuppSchedule() {
-  const supps = getSupplements().filter(s => isSuppActive(s));
+  const allSupps = getSupplements();
   const log = getSuppLog();
   const today = getTodayKey();
   const todayLog = log[today] || {};
-  const allSupps = getSupplements();
 
   const content = document.getElementById('supp-schedule-content');
   if (!content) return;
 
-  // Map each supplement to a time slot
-  function getSlotForSupp(s) {
-    const t = s.timing.toLowerCase();
-    if (t.includes('bed')) return 'bedtime';
-    if (t.includes('pre-workout') || t.includes('pre workout')) return 'preworkout';
-    if (t.includes('post-workout') || t.includes('post workout')) return 'postworkout';
-    if (t.includes('lunch')) return 'lunch';
-    if (t.includes('breakfast') || t.includes('morning')) return 'morning';
-    if (t.includes('evening')) return 'evening';
-    if (t.includes('meal') || t.includes('food')) return 'lunch';
-    return 'morning'; // default
-  }
+  // Only daily essentials: core + active rotation (matches Today tab). No clutter.
+  const supps = allSupps.filter(s => {
+    const cat = s.cat || (s.userAdded ? 'custom' : 'core');
+    if (cat === 'core' || cat === 'custom') return true;
+    if (cat.startsWith('rot')) return isSuppActive(s);
+    return false;
+  });
 
   const slotMap = {};
   supps.forEach(s => {
-    const slot = getSlotForSupp(s);
+    const slot = getSuppSlotKey(s);
     if (!slotMap[slot]) slotMap[slot] = [];
     slotMap[slot].push(s);
   });
@@ -5925,8 +5919,6 @@ function renderSuppSchedule() {
         }).join('')}
       </div>`;
   }).join('');
-
-  renderAlarmButtons(slotMap);
 }
 
 function renderAlarmButtons(slotMap) {
@@ -6269,7 +6261,7 @@ const DEFAULT_SUPPS = [
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '7') {
+  if (version !== '8') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6281,7 +6273,8 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '7');
+    localStorage.setItem('supp_stack_version', '8');
+    localStorage.setItem('trot_block', 'off');
     // Initialize rotation if not set
     if (!localStorage.getItem('trot_block')) {
       localStorage.setItem('trot_block', 'A');
@@ -6295,7 +6288,7 @@ function getSupplements() {
 }
 
 // ── T-ROTATION BLOCK SYSTEM ────────────────────────────────
-function getRotBlock() { return localStorage.getItem('trot_block') || 'A'; }
+function getRotBlock() { return localStorage.getItem('trot_block') || 'off'; }
 function getRotStart() { return localStorage.getItem('trot_start') || new Date().toISOString().split('T')[0]; }
 
 function setRotBlock(block) {
@@ -6303,7 +6296,8 @@ function setRotBlock(block) {
   localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
   renderSuppToday();
   renderSuppStack();
-  showToast('Switched to Block ' + block + ' — 8 week timer started');
+  if (typeof renderSuppSchedule === 'function') renderSuppSchedule();
+  showToast(block === 'off' ? 'T-rotation off — clean core only' : 'Block ' + block + ' on — 8 week timer started');
 }
 
 function getRotStatus() {
@@ -6329,9 +6323,10 @@ function toggleCycleConfig() {
 function isSuppActive(supp) {
   if (supp.cycle === 'daily' || supp.cycle === 'weekdays' || supp.cycle === 'training') return true;
   if (supp.cycle === 'rotation') {
-    // Active only if its block is the current rotation block
+    const block = getRotBlock();
+    if (block === 'off') return false;
     const blockMap = { rotA: 'A', rotB: 'B', rotC: 'C' };
-    return blockMap[supp.cat] === getRotBlock();
+    return blockMap[supp.cat] === block;
   }
   if (supp.cycle === 'optional') return true;  // shown but marked situational
   if (supp.cycle === 'cycle' && supp.cycleStart && supp.weeksOn && supp.weeksOff) {
@@ -6414,15 +6409,17 @@ function renderSuppToday() {
   html += `<div style="margin:20px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌙 Evening — with dinner / before bed</div></div>`;
   html += evening.map(renderItem).join('');
 
-  // Compact rotation status + switcher
-  html += `<div style="background:var(--surface);border:1px solid ${rot.expired ? 'var(--orange)' : 'var(--border)'};border-radius:var(--r);padding:12px;margin-top:20px">
+  // Compact rotation status + switcher (Off by default)
+  const rotOff = rot.block === 'off';
+  html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:20px">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:12px;color:var(--text3)">T-rotation: <strong style="color:var(--text)">Block ${rot.block}</strong></div>
-      <div style="font-size:11px;color:${rot.expired ? 'var(--orange)' : 'var(--accent)'};font-weight:600">${rot.expired ? '⚠️ Switch block!' : rot.daysLeft + 'd left'}</div>
+      <div style="font-size:12px;color:var(--text3)">T-booster rotation: <strong style="color:var(--text)">${rotOff ? 'Off' : 'Block ' + rot.block}</strong></div>
+      ${rotOff ? '<div style="font-size:11px;color:var(--text3)">optional</div>' : `<div style="font-size:11px;color:${rot.expired ? 'var(--orange)' : 'var(--accent)'};font-weight:600">${rot.expired ? '⚠️ Switch/Off' : rot.daysLeft + 'd left'}</div>`}
     </div>
     <div style="display:flex;gap:6px;margin-top:8px">
-      ${['A','B','C'].map(b => `<button onclick="setRotBlock('${b}')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${b === rot.block ? 'var(--accent)' : 'var(--border2)'};background:${b === rot.block ? 'var(--accent)' : 'var(--surface2)'};color:${b === rot.block ? '#000' : 'var(--text3)'}">${b}</button>`).join('')}
+      ${['off','A','B','C'].map(b => `<button onclick="setRotBlock('${b}')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${b === rot.block ? 'var(--accent)' : 'var(--border2)'};background:${b === rot.block ? 'var(--accent)' : 'var(--surface2)'};color:${b === rot.block ? '#000' : 'var(--text3)'}">${b === 'off' ? 'Off' : b}</button>`).join('')}
     </div>
+    ${rotOff ? '<div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">T-boosters off — clean daily core only. Tap A/B/C any time to experiment with what you own.</div>' : ''}
   </div>`;
 
   // Situational hints — one line, no checklist clutter
