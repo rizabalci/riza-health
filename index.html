@@ -6223,13 +6223,13 @@ function quickAddFromGuide(name, dose, timing) {
 const DEFAULT_SUPPS = [
   // ===== DAILY CORE =====
   { cat: 'core', name: 'Vitamin D3 + K2', dose: '4 drops (or 1× 20.000 Depot tab every 5 days)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'PRIORITY #1. You have drops + D3 20.000 Depot (take Depot 1x/week instead of daily if using that one).' },
-  { cat: 'core', name: 'Zinc Bisglycinate', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'daily', notes: 'WeightWorld bottle. NOT on empty stomach. Skip on nights you take ZMA.' },
+  { cat: 'noot', name: 'Zinc Bisglycinate', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'optional', notes: 'SITUATIONAL: when sick, run down, or diet light on meat. Your meat-heavy diet usually covers zinc. Skip on ZMA nights.' },
   { cat: 'core', name: 'Magnesium Glycinate', dose: '2-3 caps', timing: 'Evening before bed', cycle: 'daily', notes: 'NaturElan big bottle. Skip on nights you take ZMA or Magtein.' },
-  { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3 fish oil caps OR 2 krill caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'You have WeightWorld Fish Oil + Bandini Krill. Alternate or finish fish oil first. Krill has better absorption + astaxanthin.' },
+  { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3 fish oil caps OR 2 krill caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'Only on days you do NOT eat fish. Your meal plan has salmon ~4x/week — skip Omega-3 those days. WeightWorld Fish Oil + Bandini Krill.' },
   { cat: 'core', name: 'Creatine Monohydrate', dose: '1 scoop (5g)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'BioTechUSA 300g. Every day including rest days.' },
-  { cat: 'core', name: 'Boron (Bor Max)', dose: '1 tab', timing: 'Morning with breakfast', cycle: 'daily', notes: 'GEN Bor Max 365 tabs. Lowers SHBG, raises free testosterone.' },
-  { cat: 'core', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach', cycle: 'daily', notes: 'You have Probiona Komplex + Probiotic 11. Finish one before opening the other. Gut health = nutrient absorption.' },
-  { cat: 'core', name: 'Vitamin C Liposomal', dose: '1-2 caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'Kika Naturals. Immunity + collagen + cortisol support. Half dose is fine daily.' },
+  { cat: 'noot', name: 'Boron (Bor Max)', dose: '1 tab', timing: 'Morning with breakfast', cycle: 'optional', notes: 'OPTIONAL: weak-moderate evidence for lowering SHBG / raising free testosterone. Marginal. Take with a rotation block if you want, or skip.' },
+  { cat: 'noot', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach', cycle: 'optional', notes: 'SITUATIONAL ONLY: after antibiotics, travel (different food/water), stomach upset, or bloating. Healthy gut needs no daily probiotic — your skyr + fiber do the job. Use up open bottle, do not rebuy.' },
+  { cat: 'noot', name: 'Vitamin C Liposomal', dose: '1-2 caps', timing: 'Morning with breakfast', cycle: 'optional', notes: 'SITUATIONAL: when sick or run down. Your diet (peppers, fruit, potatoes) already covers vitamin C — daily capsules add nothing.' },
   // ===== TRAINING DAYS =====
   { cat: 'training', name: 'Pre-Workout (ON Gold Standard)', dose: '1 shot', timing: 'Morning, 20-30 min pre-workout', cycle: 'training', notes: 'OR plain caffeine OR coffee — never combine. Cutoff 13:00. Tingling from beta-alanine is normal.' },
   { cat: 'training', name: 'Caffeine (GymBeam)', dose: '1 tab (200mg)', timing: 'Morning pre-workout', cycle: 'training', notes: 'Alternative to Pre-Workout shot on lighter days. 5on/2off pattern. Cutoff 13:00.' },
@@ -6266,7 +6266,7 @@ const DEFAULT_SUPPS = [
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '5') {
+  if (version !== '7') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6278,7 +6278,7 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '5');
+    localStorage.setItem('supp_stack_version', '7');
     // Initialize rotation if not set
     if (!localStorage.getItem('trot_block')) {
       localStorage.setItem('trot_block', 'A');
@@ -6383,64 +6383,58 @@ function renderSuppToday() {
   if (!list) return;
   const rot = getRotStatus();
 
-  let html = '';
-  SUPP_CATEGORIES.forEach(cat => {
-    let items;
-    if (cat.key === 'rot') {
-      items = supps.map((s, idx) => ({ s, idx })).filter(x => (x.s.cat || '').startsWith('rot') && isSuppActive(x.s));
-    } else {
-      items = supps.map((s, idx) => ({ s, idx })).filter(x => (x.s.cat || 'core') === cat.key);
-    }
-    if (items.length === 0 && cat.key !== 'rot') return;
-
-    html += `<div style="margin-top:18px;margin-bottom:8px">
-      <div style="font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.3px">${cat.label}</div>
-      ${cat.sub ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${cat.sub}</div>` : ''}
-    </div>`;
-
-    // Rotation block switcher
-    if (cat.key === 'rot') {
-      html += `<div style="background:var(--surface);border:1px solid ${rot.expired ? 'var(--orange)' : 'var(--border)'};border-radius:var(--r);padding:12px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-size:12px;font-weight:600;color:var(--text)">Current: Block ${rot.block}</div>
-          <div style="font-size:11px;color:${rot.expired ? 'var(--orange)' : 'var(--accent)'};font-weight:600">${rot.expired ? '⚠️ Block finished — switch!' : rot.daysLeft + 'd left'}</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          ${['A','B','C'].map(b => `<button onclick="setRotBlock('${b}')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${b === rot.block ? 'var(--accent)' : 'var(--border2)'};background:${b === rot.block ? 'var(--accent)' : 'var(--surface2)'};color:${b === rot.block ? '#000' : 'var(--text3)'}">${b}</button>`).join('')}
-        </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">A: Ashwagandha + DAA · B: Tongkat + Maca + Fadogia · C: Tribulus + Shilajit + Pine Pollen + Akarkara<br>8 weeks per block → switch → 1 week nothing between blocks is even better.</div>
-      </div>`;
-    }
-
-    items.forEach(({ s, idx }) => {
-      const checked = todayLog[idx];
-      html += `<div class="supp-item">
-        <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
-        <div class="supp-item-info">
-          <div class="supp-item-name">${s.name}</div>
-          <div class="supp-item-meta">${s.dose} · ${s.timing}</div>
-        </div>
-      </div>`;
-    });
+  // ONLY daily essentials: core + active rotation block. Everything else lives in Stack tab.
+  const items = supps.map((s, idx) => ({ s, idx })).filter(x => {
+    const cat = x.s.cat || (x.s.userAdded ? 'custom' : 'core');
+    if (cat === 'core' || cat === 'custom') return true;
+    if (cat.startsWith('rot')) return isSuppActive(x.s);
+    return false;
   });
 
-  // User-added customs (no cat)
-  const customs = supps.map((s, idx) => ({ s, idx })).filter(x => !x.s.cat && x.s.userAdded);
-  if (customs.length) {
-    html += `<div style="margin-top:18px;margin-bottom:8px"><div style="font-size:12px;font-weight:700;color:var(--text)">➕ My additions</div></div>`;
-    customs.forEach(({ s, idx }) => {
-      const checked = todayLog[idx];
-      html += `<div class="supp-item">
-        <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
-        <div class="supp-item-info">
-          <div class="supp-item-name">${s.name}</div>
-          <div class="supp-item-meta">${s.dose} · ${s.timing}</div>
-        </div>
-      </div>`;
-    });
-  }
+  const morning = items.filter(x => getSuppSlotKey(x.s) === 'morning');
+  const evening = items.filter(x => getSuppSlotKey(x.s) === 'evening');
 
-  list.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:10px 0">No supplements.</div>';
+  const renderItem = ({ s, idx }) => {
+    const checked = todayLog[idx];
+    return `<div class="supp-item">
+      <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
+      <div class="supp-item-info">
+        <div class="supp-item-name">${s.name}</div>
+        <div class="supp-item-meta">${s.dose}</div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<div style="margin:6px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌅 Morning — with breakfast</div></div>`;
+  html += morning.map(renderItem).join('');
+
+  html += `<div style="margin:20px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌙 Evening — with dinner / before bed</div></div>`;
+  html += evening.map(renderItem).join('');
+
+  // Compact rotation status + switcher
+  html += `<div style="background:var(--surface);border:1px solid ${rot.expired ? 'var(--orange)' : 'var(--border)'};border-radius:var(--r);padding:12px;margin-top:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;color:var(--text3)">T-rotation: <strong style="color:var(--text)">Block ${rot.block}</strong></div>
+      <div style="font-size:11px;color:${rot.expired ? 'var(--orange)' : 'var(--accent)'};font-weight:600">${rot.expired ? '⚠️ Switch block!' : rot.daysLeft + 'd left'}</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      ${['A','B','C'].map(b => `<button onclick="setRotBlock('${b}')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${b === rot.block ? 'var(--accent)' : 'var(--border2)'};background:${b === rot.block ? 'var(--accent)' : 'var(--surface2)'};color:${b === rot.block ? '#000' : 'var(--text3)'}">${b}</button>`).join('')}
+    </div>
+  </div>`;
+
+  // Situational hints — one line, no checklist clutter
+  html += `<div style="font-size:11px;color:var(--text3);line-height:1.8;margin-top:12px;padding:0 2px">
+    🐟 No-fish day: take Omega-3 (skip it on salmon days)<br>
+    💥 Gym day: pre-workout + citrulline before, whey after (if protein short)<br>
+    😴 Bad sleep night: swap Magnesium for ZMA or Magtein<br>
+    🤒 Sick / run down: add Zinc + Vitamin C<br>
+    🧠 Big work day: add Lion's Mane or Rhodiola<br>
+    🤢 Travel / antibiotics / stomach off: add Probiotic<br>
+    🧪 Want to experiment: run a T-rotation block (Boron, DAA etc.)<br>
+    Full list with notes → <strong style="color:var(--text2)">My Stack</strong> tab
+  </div>`;
+
+  list.innerHTML = html;
 }
 
 function toggleSuppCheck(idx) {
@@ -6508,7 +6502,7 @@ function renderSuppAdherence() {
     const d = new Date(); d.setDate(d.getDate() - i);
     last7.push(d.toISOString().split('T')[0]);
   }
-  const active = supps.filter(s => isSuppActive(s) && ['core','training','rotA','rotB','rotC'].includes(s.cat || 'core'));
+  const active = supps.filter(s => isSuppActive(s) && ['core','rotA','rotB','rotC'].includes(s.cat || 'core'));
   if (active.length === 0) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   container.innerHTML = '';
