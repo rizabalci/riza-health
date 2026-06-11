@@ -6261,7 +6261,7 @@ const DEFAULT_SUPPS = [
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '8') {
+  if (version !== '9') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6273,8 +6273,9 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '8');
-    localStorage.setItem('trot_block', 'off');
+    localStorage.setItem('supp_stack_version', '9');
+    localStorage.setItem('trot_block', 'A');
+    localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
     // Initialize rotation if not set
     if (!localStorage.getItem('trot_block')) {
       localStorage.setItem('trot_block', 'A');
