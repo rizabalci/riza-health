@@ -7341,6 +7341,7 @@ function renderExercises() {
             <span class="ex-badge">rest ${ex.rest}</span>
           </div>
         </div>
+        ${ex.video ? `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.video)}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:#FF0000;border-radius:8px;text-decoration:none;flex-shrink:0;margin-right:8px" title="Watch form video">▶</a>` : ''}
         <div class="ex-expand">▾</div>
       </div>
       <div class="ex-body">
@@ -7361,7 +7362,8 @@ function renderExercises() {
 }
 
 function toggleCard(i) {
-  card.classList.toggle('open');
+  const card = document.getElementById(`ex-card-${i}`);
+  if (card) card.classList.toggle('open');
 }
 
 
