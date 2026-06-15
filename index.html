@@ -715,6 +715,9 @@
     <!-- WARM-UP SECTION -->
     <div id="warmup-section"></div>
 
+    <!-- DAILY SUPPLEMENT SUMMARY -->
+    <div id="home-supp-card" style="margin:0 10px 12px"></div>
+
     <div class="exercise-list" id="exercise-list"></div>
 
     <!-- COOLDOWN SECTION -->
@@ -6374,22 +6377,16 @@ const SUPP_CATEGORIES = [
 ];
 
 function renderSuppToday() {
-  const supps = getSupplements();
   const log = getSuppLog();
   const today = getTodayKey();
   const todayLog = log[today] || {};
   const list = document.getElementById('supp-today-list');
   if (!list) return;
   const rot = getRotStatus();
+  const type = getDayType();
 
-  // ONLY daily essentials: core + active rotation block. Everything else lives in Stack tab.
-  const items = supps.map((s, idx) => ({ s, idx })).filter(x => {
-    const cat = x.s.cat || (x.s.userAdded ? 'custom' : 'core');
-    if (cat === 'core' || cat === 'custom') return true;
-    if (cat.startsWith('rot')) return isSuppActive(x.s);
-    return false;
-  });
-
+  // Shared filter: core + active rotation + day-type extras
+  const items = getTodaySupps();
   const morning = items.filter(x => getSuppSlotKey(x.s) === 'morning');
   const evening = items.filter(x => getSuppSlotKey(x.s) === 'evening');
 
@@ -6404,7 +6401,18 @@ function renderSuppToday() {
     </div>`;
   };
 
-  let html = `<div style="margin:6px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌅 Morning — with breakfast</div></div>`;
+  // Day-type toggle
+  const dayBtns = [
+    { k: 'normal', label: 'Normal' },
+    { k: 'gym', label: '💥 Gym' },
+    { k: 'work', label: '🧠 Work' },
+    { k: 'sick', label: '🤒 Sick' },
+  ];
+  let html = `<div style="display:flex;gap:5px;margin-bottom:14px">
+    ${dayBtns.map(b => `<button onclick="setDayType('${b.k}')" style="flex:1;padding:7px 4px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${type === b.k ? 'var(--accent)' : 'var(--border2)'};background:${type === b.k ? 'var(--accent)' : 'var(--surface2)'};color:${type === b.k ? '#000' : 'var(--text3)'}">${b.label}</button>`).join('')}
+  </div>`;
+
+  html += `<div style="margin:6px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌅 Morning — with breakfast</div></div>`;
   html += morning.map(renderItem).join('');
 
   html += `<div style="margin:20px 0 8px"><div style="font-size:13px;font-weight:700;color:var(--text)">🌙 Evening — with dinner / before bed</div></div>`;
@@ -6423,16 +6431,12 @@ function renderSuppToday() {
     ${rotOff ? '<div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">T-boosters off — clean daily core only. Tap A/B/C any time to experiment with what you own.</div>' : ''}
   </div>`;
 
-  // Situational hints — one line, no checklist clutter
+  // Situational hints
   html += `<div style="font-size:11px;color:var(--text3);line-height:1.8;margin-top:12px;padding:0 2px">
     🐟 No-fish day: take Omega-3 (skip it on salmon days)<br>
-    💥 Gym day: pre-workout + citrulline before, whey after (if protein short)<br>
     😴 Bad sleep night: swap Magnesium for ZMA or Magtein<br>
-    🤒 Sick / run down: add Zinc + Vitamin C<br>
-    🧠 Big work day: add Lion's Mane or Rhodiola<br>
     🤢 Travel / antibiotics / stomach off: add Probiotic<br>
-    🧪 Want to experiment: run a T-rotation block (Boron, DAA etc.)<br>
-    Full list with notes → <strong style="color:var(--text2)">My Stack</strong> tab
+    Tip: tap a day type above to reveal the right extras.
   </div>`;
 
   list.innerHTML = html;
@@ -6445,10 +6449,101 @@ function toggleSuppCheck(idx) {
   log[today][idx] = !log[today][idx];
   saveSuppLog(log);
   renderSuppToday();
+  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
   const supps = getSupplements();
   const done = Object.values(log[today] || {}).filter(Boolean).length;
   const active = supps.filter(s => isSuppActive(s)).length;
   if (done === active) showToast('All supplements done today! 💪');
+}
+
+// ── DAY TYPE (gym / rest / work / sick) ────────────────────
+function getDayType() {
+  const today = getTodayKey();
+  const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
+  return map[today] || 'normal';
+}
+function setDayType(type) {
+  const today = getTodayKey();
+  const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
+  map[today] = type;
+  localStorage.setItem('supp_daytype', JSON.stringify(map));
+  renderSuppToday();
+  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+}
+
+// Which categories show for a given day type (core + rotation always shown)
+function dayTypeExtras(type) {
+  switch(type) {
+    case 'gym': return { training: true };
+    case 'work': return { noot: true };
+    case 'sick': return { sick: true };
+    default: return {};
+  }
+}
+
+// Returns the supplements to show today: core + active rotation + day-type extras
+function getTodaySupps() {
+  const supps = getSupplements();
+  const type = getDayType();
+  const extras = dayTypeExtras(type);
+  return supps.map((s, idx) => ({ s, idx })).filter(({ s }) => {
+    const cat = s.cat || (s.userAdded ? 'custom' : 'core');
+    if (cat === 'core' || cat === 'custom') return true;
+    if (cat.startsWith('rot')) return isSuppActive(s);
+    if (cat === 'training' && extras.training) return true;
+    if (cat === 'noot' && extras.noot) {
+      // On sick day show Zinc + Vitamin C specifically; on work day show nootropics
+      if (extras.sick) return s.name.includes('Zinc') || s.name.includes('Vitamin C');
+      return true;
+    }
+    if (extras.sick && (s.name.includes('Zinc') || s.name.includes('Vitamin C'))) return true;
+    return false;
+  });
+}
+
+// ── HOME SCREEN SUPPLEMENT CARD ────────────────────────────
+function renderHomeSuppCard() {
+  const card = document.getElementById('home-supp-card');
+  if (!card) return;
+  const log = getSuppLog();
+  const today = getTodayKey();
+  const todayLog = log[today] || {};
+  const type = getDayType();
+
+  const items = getTodaySupps();
+  const morning = items.filter(x => getSuppSlotKey(x.s) === 'morning');
+  const evening = items.filter(x => getSuppSlotKey(x.s) === 'evening');
+  const doneCount = items.filter(x => todayLog[x.idx]).length;
+
+  const dayBtns = [
+    { k: 'normal', label: 'Normal' },
+    { k: 'gym', label: '💥 Gym' },
+    { k: 'work', label: '🧠 Work' },
+    { k: 'sick', label: '🤒 Sick' },
+  ];
+
+  const row = ({ s, idx }) => {
+    const done = todayLog[idx];
+    return `<div onclick="toggleSuppCheck(${idx})" style="display:flex;align-items:center;gap:9px;padding:7px 0;cursor:pointer;touch-action:manipulation">
+      <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${done ? 'var(--accent)' : 'var(--border2)'};background:${done ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#000">${done ? '✓' : ''}</div>
+      <div style="flex:1;font-size:13px;font-weight:500;color:${done ? 'var(--text3)' : 'var(--text)'};${done ? 'text-decoration:line-through' : ''}">${s.name}</div>
+      <div style="font-size:11px;color:var(--text3)">${s.dose}</div>
+    </div>`;
+  };
+
+  card.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:700;color:var(--text)">💊 Today's Supplements</div>
+        <div style="font-size:12px;color:var(--text3)">${doneCount}/${items.length} done</div>
+      </div>
+      <div style="display:flex;gap:5px;margin-bottom:12px">
+        ${dayBtns.map(b => `<button onclick="setDayType('${b.k}')" style="flex:1;padding:6px 4px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${type === b.k ? 'var(--accent)' : 'var(--border2)'};background:${type === b.k ? 'var(--accent)' : 'var(--surface2)'};color:${type === b.k ? '#000' : 'var(--text3)'}">${b.label}</button>`).join('')}
+      </div>
+      ${morning.length ? `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:4px 0 2px">🌅 MORNING</div>${morning.map(row).join('')}` : ''}
+      ${evening.length ? `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 2px">🌙 EVENING</div>${evening.map(row).join('')}` : ''}
+      <div onclick="switchTab('supplements')" style="text-align:center;font-size:11px;color:var(--accent);margin-top:10px;cursor:pointer;touch-action:manipulation">Full stack & notes →</div>
+    </div>`;
 }
 
 function renderSuppStack() {
@@ -7359,6 +7454,7 @@ function renderExercises() {
     list.appendChild(card);
   });
   renderCooldown();
+  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
 }
 
 function toggleCard(i) {
