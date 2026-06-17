@@ -1187,27 +1187,44 @@
 <div class="screen" id="screen-photos">
   <div style="padding:0 16px 40px">
     <div style="font-size:22px;font-weight:600;letter-spacing:-0.3px;padding:20px 0 4px">📸 Progress Photos</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6">Monthly photo log with notes. Take photos same time, same lighting, same conditions.</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6">Same time of day, same lighting, same poses. Front, side, back. The mirror lies day to day — photos 4 weeks apart tell the truth.</div>
 
-    <div class="supp-section-title" style="margin-top:0">Add monthly entry</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-      <div style="display:flex;gap:8px">
-        <div style="flex:1"><div class="measure-label">Date</div><input class="field-input" type="date" id="photo-date"></div>
-        <div style="flex:1"><div class="measure-label">Weight (kg)</div><input class="field-input" type="number" id="photo-weight" placeholder="95.0" step="0.1" inputmode="decimal"></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <div style="flex:1"><div class="measure-label">Waist (cm)</div><input class="field-input" type="number" id="photo-waist" placeholder="92" step="0.5" inputmode="decimal"></div>
-        <div style="flex:1"><div class="measure-label">Body fat % (est.)</div><input class="field-input" type="number" id="photo-bf" placeholder="22" step="0.5" inputmode="decimal"></div>
-      </div>
-      <textarea class="field-input" id="photo-notes" rows="3" style="resize:none;font-size:14px" placeholder="Notes: visible changes, how you feel, what is improving, what to work on..."></textarea>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text3);line-height:1.6">
-        📸 Take your photos separately using your phone camera. Save them to a folder. Log your measurements and notes here for reference alongside the photos.
-      </div>
-      <button class="checkin-submit" onclick="savePhotoEntry()">Save monthly entry</button>
+    <!-- COMPARE MODE TOGGLE -->
+    <div style="display:flex;gap:6px;margin-bottom:16px">
+      <button id="photo-tab-add" onclick="switchPhotoTab('add')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#000">Add / Log</button>
+      <button id="photo-tab-compare" onclick="switchPhotoTab('compare')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text3)">Compare</button>
     </div>
 
-    <div class="supp-section-title">Photo log history</div>
-    <div id="photo-history-list"></div>
+    <!-- ADD PANEL -->
+    <div id="photo-panel-add">
+      <div class="supp-section-title" style="margin-top:0">Add entry</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:flex;gap:8px">
+          <div style="flex:1"><div class="measure-label">Date</div><input class="field-input" type="date" id="photo-date"></div>
+          <div style="flex:1"><div class="measure-label">Weight (kg)</div><input class="field-input" type="number" id="photo-weight" placeholder="95.0" step="0.1" inputmode="decimal"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1"><div class="measure-label">Waist (cm)</div><input class="field-input" type="number" id="photo-waist" placeholder="92" step="0.5" inputmode="decimal"></div>
+          <div style="flex:1"><div class="measure-label">Body fat % (est.)</div><input class="field-input" type="number" id="photo-bf" placeholder="22" step="0.5" inputmode="decimal"></div>
+        </div>
+        <div class="measure-label">Photos (front / side / back — add any)</div>
+        <input type="file" accept="image/*" id="photo-file" multiple onchange="handlePhotoFiles(this)" style="font-size:13px;color:var(--text3)">
+        <div id="photo-preview" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <textarea class="field-input" id="photo-notes" rows="3" style="resize:none;font-size:14px" placeholder="Notes: visible changes, how you feel, what is improving..."></textarea>
+        <button class="checkin-submit" onclick="savePhotoEntry()">Save entry</button>
+      </div>
+      <div class="supp-section-title">History</div>
+      <div id="photo-history-list"></div>
+    </div>
+
+    <!-- COMPARE PANEL -->
+    <div id="photo-panel-compare" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <div style="flex:1"><div class="measure-label">Before</div><select class="field-input" id="photo-cmp-a" onchange="renderPhotoCompare()"></select></div>
+        <div style="flex:1"><div class="measure-label">After</div><select class="field-input" id="photo-cmp-b" onchange="renderPhotoCompare()"></select></div>
+      </div>
+      <div id="photo-compare-view"></div>
+    </div>
   </div>
 </div>
 
@@ -3039,13 +3056,13 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back on heels, arms extended forward on floor. Decompresses lower back.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'bench press proper form technique' },
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'incline dumbbell press form technique' },
-      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'cable chest fly low to high technique' },
-      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'seated dumbbell shoulder press form technique' },
-      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'cable lateral raise form technique shoulders' },
-      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'cable overhead triceps extension form' },
-      { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips, not head toward knees. DROP SET last set. Progressive overload every week.', video: 'cable crunch kneeling form technique abs' },
+      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard bench press technique' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'Jeff Nippard incline dumbbell press' },
+      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'Jeff Nippard cable fly chest' },
+      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'Jeff Nippard shoulder press' },
+      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'Jeff Nippard lateral raise' },
+      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'Jeff Nippard triceps extension' },
+      { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips, not head toward knees. DROP SET last set. Progressive overload every week.', video: 'Jeff Nippard cable crunch abs' },
     ]
   },
   {
@@ -3065,13 +3082,13 @@ const DAYS = [
       { name: 'Thoracic rotation', duration: '1×10 each side', desc: 'Sit cross-legged, rotate torso fully each side. Unlocks thoracic spine after heavy rows.', video: 'thoracic rotation stretch' },
     ],
     exercises: [
-      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'deadlift proper form technique barbell' },
-      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'pull up proper form technique back' },
-      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'chest supported dumbbell row form technique' },
-      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'seated cable row wide grip form technique' },
-      { name: 'Face Pull (rope)', sets: 3, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF. Feel cue: pull rope apart as you bring to face — external rotation of shoulders. Light weight, high reps. Non-negotiable at 39.', video: 'cable face pull form technique rear delt' },
-      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'incline dumbbell curl form technique biceps' },
-      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt before raising legs — activates abs not hip flexors. Slow and controlled.', video: 'hanging leg raise form technique abs' },
+      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard deadlift technique' },
+      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'Jeff Nippard pull up technique' },
+      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'Jeff Nippard chest supported row' },
+      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'Jeff Nippard cable row back' },
+      { name: 'Face Pull (rope)', sets: 3, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF. Feel cue: pull rope apart as you bring to face — external rotation of shoulders. Light weight, high reps. Non-negotiable at 39.', video: 'Jeff Nippard face pull rear delt' },
+      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'Jeff Nippard incline dumbbell curl' },
+      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt before raising legs — activates abs not hip flexors. Slow and controlled.', video: 'Jeff Nippard hanging leg raise abs' },
     ]
   },
   {
@@ -3092,23 +3109,23 @@ const DAYS = [
       { name: 'Calf stretch on step', duration: '2×30 sec each leg', desc: 'Heel off edge of step, let it drop. Deep calf and Achilles stretch.', video: 'calf stretch step achilles' },
     ],
     exercises: [
-      { name: 'Barbell Squat', sets: 4, reps: '5-7', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. LAST SET: rest-pause. Add 2.5kg when you hit top of range all 4 sets.', video: 'barbell squat proper form technique' },
-      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-12', rest: '90 sec', note: 'GLUTE HYPERTROPHY. Feel cue: drive through heels not toes. SQUEEZE maximally at top for 1 full second every rep. LAST SET: drop weight 30% and continue. Add weight when you hit 12 reps all 4 sets.', video: 'barbell hip thrust form technique glutes' },
-      { name: 'Romanian Deadlift', sets: 3, reps: '8-10', rest: '2 min', note: 'HAMSTRING + GLUTE. Feel cue: push your hips back to the wall behind you. LOADED STRETCH: 4-sec eccentric, pause 1 sec at maximum stretch — this is the highest hypertrophy position. Do not rush this exercise.', video: 'romanian deadlift form technique hamstrings' },
-      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL. Feel cue: front heel drives into floor, knee tracks over 2nd toe. LOADED STRETCH: pause 1 sec at bottom — maximally stretched hip flexor and glute. Fixes left-right imbalances.', video: 'bulgarian split squat dumbbell form technique' },
-      { name: 'Leg Curl (lying or seated)', sets: 3, reps: '10-12', rest: '60 sec', note: 'HAMSTRING ISOLATION. Feel cue: curl heels toward glutes, not just bend knees. 3-sec eccentric. LOADED STRETCH: control fully to maximum extension between reps. DROP SET last set.', video: 'leg curl machine form technique hamstrings' },
-      { name: 'Cable Kickback', sets: 3, reps: '15 each leg', rest: '45 sec', note: 'GLUTE ISOLATION. Feel cue: squeeze the glute first, then let leg follow. Hold at top 1 sec. DROP SET last set: reduce weight 30% continue to failure.', video: 'cable kickback glutes form technique' },
-      { name: 'Standing Calf Raise', sets: 4, reps: '15-20', rest: '45 sec', note: 'CALVES. LOADED STRETCH: 3-sec descent to maximum stretch, pause 1 sec at bottom. No half reps — calves only grow with full range.', video: 'standing calf raise form technique' },
+      { name: 'Barbell Squat', sets: 4, reps: '5-7', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. LAST SET: rest-pause. Add 2.5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard squat technique' },
+      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-12', rest: '90 sec', note: 'GLUTE HYPERTROPHY. Feel cue: drive through heels not toes. SQUEEZE maximally at top for 1 full second every rep. LAST SET: drop weight 30% and continue. Add weight when you hit 12 reps all 4 sets.', video: 'Bret Contreras barbell hip thrust technique' },
+      { name: 'Romanian Deadlift', sets: 3, reps: '8-10', rest: '2 min', note: 'HAMSTRING + GLUTE. Feel cue: push your hips back to the wall behind you. LOADED STRETCH: 4-sec eccentric, pause 1 sec at maximum stretch — this is the highest hypertrophy position. Do not rush this exercise.', video: 'Bret Contreras romanian deadlift glutes' },
+      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL. Feel cue: front heel drives into floor, knee tracks over 2nd toe. LOADED STRETCH: pause 1 sec at bottom — maximally stretched hip flexor and glute. Fixes left-right imbalances.', video: 'Jeff Nippard bulgarian split squat' },
+      { name: 'Leg Curl (lying or seated)', sets: 3, reps: '10-12', rest: '60 sec', note: 'HAMSTRING ISOLATION. Feel cue: curl heels toward glutes, not just bend knees. 3-sec eccentric. LOADED STRETCH: control fully to maximum extension between reps. DROP SET last set.', video: 'Jeff Nippard leg curl hamstrings' },
+      { name: 'Cable Kickback', sets: 3, reps: '15 each leg', rest: '45 sec', note: 'GLUTE ISOLATION. Feel cue: squeeze the glute first, then let leg follow. Hold at top 1 sec. DROP SET last set: reduce weight 30% continue to failure.', video: 'Bret Contreras cable glute kickback' },
+      { name: 'Standing Calf Raise', sets: 4, reps: '15-20', rest: '45 sec', note: 'CALVES. LOADED STRETCH: 3-sec descent to maximum stretch, pause 1 sec at bottom. No half reps — calves only grow with full range.', video: 'Jeff Nippard calf raise' },
     ]
   },
   {
     key: 'glutes', name: 'Tue', label: 'GLUTE DAY', title: 'Glutes', subtitle: 'Glute build + Hamstrings + Core',
     warmup: [
       { name: 'Light cardio', duration: '5 min', desc: 'Treadmill incline walk (8-10% grade, 5 km/h) or stair climber. Incline walking pre-activates the glutes.', video: '' },
-      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Lie on back, knees bent, drive hips up squeezing glutes hard at top for 1 sec. Wakes up the glutes before loading.', video: 'glute bridge bodyweight activation exercise' },
-      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around knees or ankles, half-squat, step sideways keeping tension. Fires up glute medius (the side glute that gives roundness).', video: 'banded lateral walk glute activation exercise' },
-      { name: 'Banded clamshell', duration: '2×15 each side', desc: 'Lie on side, band around knees, open top knee like a clam. Targets upper glute. Slow and controlled.', video: 'clamshell exercise glute medius activation' },
-      { name: 'Bodyweight hip hinge', duration: '2×10 reps', desc: 'Hinge at hips with flat back, feel hamstring stretch, drive hips forward. Grooves the hip thrust and RDL pattern.', video: 'bodyweight hip hinge pattern warm up' },
+      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Lie on back, knees bent, drive hips up squeezing glutes hard at top for 1 sec. Wakes up the glutes before loading.', video: 'Bret Contreras glute bridge activation' },
+      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around knees or ankles, half-squat, step sideways keeping tension. Fires up glute medius (the side glute that gives roundness).', video: 'Bret Contreras banded lateral walk glute' },
+      { name: 'Banded clamshell', duration: '2×15 each side', desc: 'Lie on side, band around knees, open top knee like a clam. Targets upper glute. Slow and controlled.', video: 'Bret Contreras clamshell glute medius' },
+      { name: 'Bodyweight hip hinge', duration: '2×10 reps', desc: 'Hinge at hips with flat back, feel hamstring stretch, drive hips forward. Grooves the hip thrust and RDL pattern.', video: 'Bret Contreras hip hinge pattern' },
       { name: 'Cat-cow + hip circles', duration: '1×10 each', desc: 'Mobilise spine and open the hips before heavy loading.', video: 'hip circles mobility warm up exercise' },
     ],
     cooldown: [
@@ -3118,13 +3135,13 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back, arms forward. Decompresses lower back after hip thrusts and deadlifts.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Bench against shoulder blades, bar over hips (use a pad). Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep where glutes are fully contracted. Add 5kg when you hit 10 reps all 4 sets.', video: 'barbell hip thrust proper form technique glutes' },
-      { name: 'Romanian Deadlift (RDL)', sets: 4, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand. Add weight when 10 reps feel controlled.', video: 'romanian deadlift form technique glutes hamstrings' },
-      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE. Rear foot on bench, torso leaned slightly FORWARD to bias glutes over quads. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom position. Dumbbells in hands. This builds the round, lifted look.', video: 'bulgarian split squat glute form technique' },
-      { name: 'Cable Glute Kickback', sets: 3, reps: '12-15 each leg', rest: '60 sec', note: 'ISOLATION. Ankle strap on low cable. Feel cue: kick straight back and slightly up, squeeze the glute hard at the top for 1 sec, slow return. Keep the back flat — all the movement comes from the hip. DROP SET last set each leg.', video: 'cable glute kickback form technique' },
-      { name: 'Hip Abduction Machine', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS (side glute = roundness/width). Lean torso slightly forward to bias upper glute. Feel cue: push knees apart slowly, PAUSE 2 sec at full open, control back in. DROP SET last set. Do not use momentum.', video: 'hip abduction machine glute medius form' },
-      { name: 'Walking Lunges (dumbbell)', sets: 3, reps: '12 each leg', rest: '90 sec', note: 'GLUTE STRETCH UNDER LOAD. Long stride to bias glutes, step into a deep lunge, push through the front heel. Feel cue: feel the glute of the front leg stretch then contract. Keep torso tall.', video: 'walking lunges dumbbell form technique glutes' },
-      { name: 'Cable Pull-Through', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE FINISHER. Face away from low cable, rope between legs, hinge at hips and drive forward squeezing glutes. Feel cue: this is a hip hinge, not a squat — all glutes. Squeeze hard at the top. Burns out the glutes at the end.', video: 'cable pull through glute form technique' },
+      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Bench against shoulder blades, bar over hips (use a pad). Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep where glutes are fully contracted. Add 5kg when you hit 10 reps all 4 sets.', video: 'Bret Contreras barbell hip thrust technique' },
+      { name: 'Romanian Deadlift (RDL)', sets: 4, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand. Add weight when 10 reps feel controlled.', video: 'Bret Contreras romanian deadlift glutes' },
+      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE. Rear foot on bench, torso leaned slightly FORWARD to bias glutes over quads. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom position. Dumbbells in hands. This builds the round, lifted look.', video: 'Bret Contreras bulgarian split squat glutes' },
+      { name: 'Cable Glute Kickback', sets: 3, reps: '12-15 each leg', rest: '60 sec', note: 'ISOLATION. Ankle strap on low cable. Feel cue: kick straight back and slightly up, squeeze the glute hard at the top for 1 sec, slow return. Keep the back flat — all the movement comes from the hip. DROP SET last set each leg.', video: 'Bret Contreras cable glute kickback' },
+      { name: 'Hip Abduction Machine', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS (side glute = roundness/width). Lean torso slightly forward to bias upper glute. Feel cue: push knees apart slowly, PAUSE 2 sec at full open, control back in. DROP SET last set. Do not use momentum.', video: 'Bret Contreras hip abduction glute medius' },
+      { name: 'Walking Lunges (dumbbell)', sets: 3, reps: '12 each leg', rest: '90 sec', note: 'GLUTE STRETCH UNDER LOAD. Long stride to bias glutes, step into a deep lunge, push through the front heel. Feel cue: feel the glute of the front leg stretch then contract. Keep torso tall.', video: 'Bret Contreras walking lunges glutes' },
+      { name: 'Cable Pull-Through', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE FINISHER. Face away from low cable, rope between legs, hinge at hips and drive forward squeezing glutes. Feel cue: this is a hip hinge, not a squat — all glutes. Squeeze hard at the top. Burns out the glutes at the end.', video: 'Bret Contreras cable pull through glutes' },
     ]
   },
   {
@@ -3154,14 +3171,14 @@ const DAYS = [
       { name: 'Foam roll (if available)', duration: '5 min', desc: 'Roll quads, IT band, upper back. John Reed may have foam rollers in the stretching area.', video: 'foam rolling upper back quads technique' },
     ],
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'incline dumbbell press form technique' },
-      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'pull up proper form technique back' },
-      { name: 'Arnold Press (dumbbell)', sets: 3, reps: '10-12', rest: '60 sec', note: 'SHOULDER. Feel cue: rotate palms as you press — starts facing you, ends facing forward. Hits all 3 shoulder heads. Control the rotation both ways.', video: 'arnold press dumbbell form technique shoulders' },
-      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'parallel bar dip form technique triceps chest' },
-      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'cable bicep curl form technique' },
-      { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips. Progressive overload every week. DROP SET last set.', video: 'cable crunch kneeling form technique abs' },
-      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'hanging leg raise form technique abs' },
-      { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'cable woodchop high to low obliques form' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'Jeff Nippard incline dumbbell press' },
+      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'Jeff Nippard pull up technique' },
+      { name: 'Arnold Press (dumbbell)', sets: 3, reps: '10-12', rest: '60 sec', note: 'SHOULDER. Feel cue: rotate palms as you press — starts facing you, ends facing forward. Hits all 3 shoulder heads. Control the rotation both ways.', video: 'Jeff Nippard arnold press' },
+      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'Jeff Nippard dips triceps chest' },
+      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'Jeff Nippard cable curl biceps' },
+      { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips. Progressive overload every week. DROP SET last set.', video: 'Jeff Nippard cable crunch abs' },
+      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'Jeff Nippard hanging leg raise abs' },
+      { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'Jeff Nippard cable woodchop obliques' },
     ]
   }
 ];
@@ -4981,49 +4998,174 @@ function initStats() {
 function initPhotos() {
   const dateEl = document.getElementById('photo-date');
   if (dateEl && !dateEl.value) dateEl.value = getTodayKey();
+  pendingPhotos = [];
+  const prev = document.getElementById('photo-preview');
+  if (prev) prev.innerHTML = '';
+  switchPhotoTab('add');
   renderPhotoHistory();
 }
+
+function switchPhotoTab(tab) {
+  const addP = document.getElementById('photo-panel-add');
+  const cmpP = document.getElementById('photo-panel-compare');
+  const addB = document.getElementById('photo-tab-add');
+  const cmpB = document.getElementById('photo-tab-compare');
+  if (!addP) return;
+  const on = (b)=>{b.style.background='var(--accent)';b.style.color='#000';b.style.borderColor='var(--accent)';};
+  const off = (b)=>{b.style.background='var(--surface2)';b.style.color='var(--text3)';b.style.borderColor='var(--border2)';};
+  if (tab === 'compare') {
+    addP.style.display='none'; cmpP.style.display='block'; on(cmpB); off(addB);
+    populateCompareDropdowns();
+  } else {
+    addP.style.display='block'; cmpP.style.display='none'; on(addB); off(cmpB);
+  }
+}
+
+let pendingPhotos = [];
+function handlePhotoFiles(input) {
+  const files = Array.from(input.files || []).slice(0, 3);
+  const prev = document.getElementById('photo-preview');
+  pendingPhotos = [];
+  prev.innerHTML = '';
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      compressImage(e.target.result, 700, 0.7, (compressed) => {
+        pendingPhotos.push(compressed);
+        const img = document.createElement('img');
+        img.src = compressed;
+        img.style.cssText = 'width:70px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border2)';
+        prev.appendChild(img);
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function compressImage(dataUrl, maxW, quality, cb) {
+  const img = new Image();
+  img.onload = () => {
+    const scale = Math.min(1, maxW / img.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    cb(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+
 function getPhotoEntries() { return JSON.parse(localStorage.getItem('photo_entries')||'[]'); }
+
 function savePhotoEntry() {
   const date=document.getElementById('photo-date').value;
   const weight=document.getElementById('photo-weight').value;
   const waist=document.getElementById('photo-waist').value;
   const bf=document.getElementById('photo-bf').value;
   const notes=document.getElementById('photo-notes').value.trim();
-  if (!date||!notes) { showToast('Add date and notes at minimum'); return; }
+  if (!date) { showToast('Add a date'); return; }
+  if (!notes && pendingPhotos.length===0) { showToast('Add a photo or a note'); return; }
   const entries=getPhotoEntries();
   const idx=entries.findIndex(e=>e.date===date);
-  const entry={date,weight:weight||null,waist:waist||null,bf:bf||null,notes};
+  const existingPhotos = idx>=0 ? (entries[idx].photos||[]) : [];
+  const entry={date,weight:weight||null,waist:waist||null,bf:bf||null,notes,photos: pendingPhotos.length ? pendingPhotos : existingPhotos};
   if (idx>=0) entries[idx]=entry; else entries.unshift(entry);
   entries.sort((a,b)=>b.date.localeCompare(a.date));
-  localStorage.setItem('photo_entries',JSON.stringify(entries));
+  try {
+    localStorage.setItem('photo_entries',JSON.stringify(entries));
+  } catch(err) {
+    showToast('Storage full — try fewer/smaller photos'); return;
+  }
   ['photo-notes','photo-weight','photo-waist','photo-bf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  pendingPhotos=[];
+  document.getElementById('photo-preview').innerHTML='';
+  document.getElementById('photo-file').value='';
   showToast('Entry saved 📸');
   renderPhotoHistory();
 }
+
 function renderPhotoHistory() {
   const entries=getPhotoEntries();
   const el=document.getElementById('photo-history-list');
   if (!el) return;
-  if (!entries.length) { el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No entries yet. Log monthly with notes.</div>'; return; }
+  if (!entries.length) { el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No entries yet. Add your first photo today — it becomes your baseline.</div>'; return; }
   el.innerHTML=entries.map((e,i)=>`
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div style="font-size:14px;font-weight:600;color:var(--text)">${formatDate(e.date)}</div>
         <button onclick="deletePhotoEntry(${i})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0">×</button>
       </div>
+      ${(e.photos&&e.photos.length)?`<div style="display:flex;gap:6px;margin-bottom:8px">${e.photos.map(p=>`<img src="${p}" onclick="viewPhotoFull('${p.slice(0,30)}',${i})" style="width:80px;height:106px;object-fit:cover;border-radius:8px;border:1px solid var(--border2);cursor:pointer">`).join('')}</div>`:''}
       ${(e.weight||e.waist||e.bf)?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
         ${e.weight?`<span style="font-size:11px;color:var(--accent);background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.2);padding:2px 8px;border-radius:10px">${e.weight}kg</span>`:''}
         ${e.waist?`<span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px">Waist ${e.waist}cm</span>`:''}
         ${e.bf?`<span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px">${e.bf}% BF</span>`:''}
       </div>`:''}
-      <div style="font-size:13px;color:var(--text2);line-height:1.6">${e.notes}</div>
+      ${e.notes?`<div style="font-size:13px;color:var(--text2);line-height:1.6">${e.notes}</div>`:''}
     </div>`).join('');
 }
+
 function deletePhotoEntry(i) {
   const entries=getPhotoEntries(); entries.splice(i,1);
   localStorage.setItem('photo_entries',JSON.stringify(entries));
   renderPhotoHistory(); showToast('Deleted');
+}
+
+function viewPhotoFull(_, entryIdx) {
+  const e = getPhotoEntries()[entryIdx];
+  if (!e || !e.photos) return;
+  const modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;overflow:auto';
+  modal.onclick=()=>modal.remove();
+  modal.innerHTML = `<div style="color:var(--text2);font-size:13px">${formatDate(e.date)}</div>` +
+    e.photos.map(p=>`<img src="${p}" style="max-width:100%;max-height:70vh;border-radius:8px">`).join('') +
+    `<div style="color:var(--text3);font-size:12px;margin-top:8px">Tap anywhere to close</div>`;
+  document.body.appendChild(modal);
+}
+
+function populateCompareDropdowns() {
+  const entries = getPhotoEntries().filter(e=>e.photos && e.photos.length);
+  const a=document.getElementById('photo-cmp-a'), b=document.getElementById('photo-cmp-b');
+  if (!a||!b) return;
+  if (entries.length<1) { a.innerHTML=b.innerHTML='<option>No photos yet</option>'; document.getElementById('photo-compare-view').innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0">Add at least 2 photo entries to compare. Take your first one today as a baseline.</div>'; return; }
+  const opts = entries.map((e,i)=>`<option value="${e.date}">${formatDate(e.date)}${e.weight?' · '+e.weight+'kg':''}</option>`).join('');
+  a.innerHTML=opts; b.innerHTML=opts;
+  // default: oldest as before, newest as after
+  a.value = entries[entries.length-1].date;
+  b.value = entries[0].date;
+  renderPhotoCompare();
+}
+
+function renderPhotoCompare() {
+  const entries = getPhotoEntries();
+  const a=document.getElementById('photo-cmp-a'), b=document.getElementById('photo-cmp-b');
+  const view=document.getElementById('photo-compare-view');
+  if (!a||!b||!view) return;
+  const ea=entries.find(e=>e.date===a.value), eb=entries.find(e=>e.date===b.value);
+  if (!ea||!eb) return;
+  const col = (e,label)=>`<div style="flex:1">
+    <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">${label}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:6px">${formatDate(e.date)}</div>
+    ${(e.photos||[]).map(p=>`<img src="${p}" style="width:100%;border-radius:8px;margin-bottom:6px;border:1px solid var(--border2)">`).join('')}
+  </div>`;
+  // diff stats
+  const diff=(x,y,unit,lowerBetter)=>{
+    if(x==null||y==null) return '';
+    const d=(parseFloat(y)-parseFloat(x)).toFixed(1);
+    const good = lowerBetter ? d<0 : d>0;
+    const sign = d>0?'+':'';
+    return `<span style="font-size:12px;color:${d==0?'var(--text3)':(good?'var(--accent)':'var(--orange)')};background:var(--surface2);border:1px solid var(--border2);padding:3px 10px;border-radius:12px">${sign}${d}${unit}</span>`;
+  };
+  view.innerHTML=`
+    <div style="display:flex;gap:10px;margin-bottom:14px">${col(ea,'BEFORE')}${col(eb,'AFTER')}</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Change</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${diff(ea.weight,eb.weight,'kg',true)}
+        ${diff(ea.waist,eb.waist,'cm waist',true)}
+        ${diff(ea.bf,eb.bf,'% BF',true)}
+      </div>
+    </div>`;
 }
 
 // ── HOME WORKOUTS ─────────────────────────────────────────
