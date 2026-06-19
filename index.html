@@ -6558,12 +6558,12 @@ function renderSuppToday() {
   const morning = items.filter(x => getSuppSlotKey(x.s) === 'morning');
   const evening = items.filter(x => getSuppSlotKey(x.s) === 'evening');
 
-  const renderItem = ({ s, idx }) => {
+  const renderItem = ({ s, idx, isDailyExtra }) => {
     const checked = todayLog[idx];
     return `<div class="supp-item">
       <div class="supp-item-check ${checked ? 'checked' : ''}" onclick="toggleSuppCheck(${idx})">${checked ? '✓' : ''}</div>
       <div class="supp-item-info">
-        <div class="supp-item-name">${s.name}</div>
+        <div class="supp-item-name">${s.name}${isDailyExtra ? ' <span style="font-size:9px;color:var(--accent);background:rgba(200,255,0,0.12);padding:1px 5px;border-radius:8px;font-weight:700">USE-UP</span>' : ''}</div>
         <div class="supp-item-meta">${s.dose}</div>
       </div>
     </div>`;
@@ -6650,23 +6650,71 @@ function dayTypeExtras(type) {
 }
 
 // Returns the supplements to show today: core + active rotation + day-type extras
+// Whether the "1-2 rotating extras per day" feature is on (default on per user request)
+function getDailyExtraOn() { return localStorage.getItem('daily_extra_on') !== '0'; }
+function setDailyExtraOn(on) {
+  localStorage.setItem('daily_extra_on', on ? '1' : '0');
+  renderSuppToday();
+  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+}
+
+// Day number since epoch — stable per calendar day
+function getDayNumber() {
+  return Math.floor(new Date(getTodayKey()).getTime() / 86400000);
+}
+
+// Pool of optional supplements to cycle through (use-up-stock items).
+// Nootropics + sleep + any rotation-block items NOT in the currently active block.
+function getExtraPool(supps) {
+  const activeBlock = getRotBlock(); // 'off','A','B','C'
+  const blockMap = { rotA: 'A', rotB: 'B', rotC: 'C' };
+  return supps.map((s, idx) => ({ s, idx })).filter(({ s }) => {
+    const cat = s.cat || '';
+    if (cat === 'noot' || cat === 'sleep') return true;
+    if (cat.startsWith('rot')) {
+      // include rotation items only when their block is NOT the active one (so active block still shows normally)
+      return blockMap[cat] !== activeBlock;
+    }
+    return false;
+  });
+}
+
+// Returns today's 1-2 rotating extras (deterministic by day)
+function getDailyExtras(supps) {
+  if (!getDailyExtraOn()) return [];
+  const pool = getExtraPool(supps);
+  if (pool.length === 0) return [];
+  const perDay = 1; // one extra per day keeps it light; cycles through everything
+  const dayN = getDayNumber();
+  const out = [];
+  for (let k = 0; k < perDay; k++) {
+    out.push(pool[(dayN + k) % pool.length]);
+  }
+  return out;
+}
+
 function getTodaySupps() {
   const supps = getSupplements();
   const type = getDayType();
   const extras = dayTypeExtras(type);
-  return supps.map((s, idx) => ({ s, idx })).filter(({ s }) => {
+  const dailyExtras = getDailyExtras(supps);
+  const dailyExtraIdx = new Set(dailyExtras.map(x => x.idx));
+
+  return supps.map((s, idx) => ({ s, idx })).filter(({ s, idx }) => {
     const cat = s.cat || (s.userAdded ? 'custom' : 'core');
     if (cat === 'core' || cat === 'custom') return true;
-    if (cat.startsWith('rot')) return isSuppActive(s);
+    if (cat.startsWith('rot') && isSuppActive(s)) return true;
+    // day-type extras (gym/work/sick)
     if (cat === 'training' && extras.training) return true;
     if (cat === 'noot' && extras.noot) {
-      // On sick day show Zinc + Vitamin C specifically; on work day show nootropics
       if (extras.sick) return s.name.includes('Zinc') || s.name.includes('Vitamin C');
       return true;
     }
     if (extras.sick && (s.name.includes('Zinc') || s.name.includes('Vitamin C'))) return true;
+    // rotating "extra of the day"
+    if (dailyExtraIdx.has(idx)) return true;
     return false;
-  });
+  }).map(x => ({ ...x, isDailyExtra: dailyExtraIdx.has(x.idx) }));
 }
 
 // ── HOME SCREEN SUPPLEMENT CARD ────────────────────────────
@@ -6690,11 +6738,11 @@ function renderHomeSuppCard() {
     { k: 'sick', label: '🤒 Sick' },
   ];
 
-  const row = ({ s, idx }) => {
+  const row = ({ s, idx, isDailyExtra }) => {
     const done = todayLog[idx];
     return `<div onclick="toggleSuppCheck(${idx})" style="display:flex;align-items:center;gap:9px;padding:7px 0;cursor:pointer;touch-action:manipulation">
       <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${done ? 'var(--accent)' : 'var(--border2)'};background:${done ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#000">${done ? '✓' : ''}</div>
-      <div style="flex:1;font-size:13px;font-weight:500;color:${done ? 'var(--text3)' : 'var(--text)'};${done ? 'text-decoration:line-through' : ''}">${s.name}</div>
+      <div style="flex:1;font-size:13px;font-weight:500;color:${done ? 'var(--text3)' : 'var(--text)'};${done ? 'text-decoration:line-through' : ''}">${s.name}${isDailyExtra ? ' <span style="font-size:9px;color:var(--accent);background:rgba(200,255,0,0.12);padding:1px 5px;border-radius:8px;font-weight:700;vertical-align:middle">USE-UP</span>' : ''}</div>
       <div style="font-size:11px;color:var(--text3)">${s.dose}</div>
     </div>`;
   };
@@ -6710,6 +6758,12 @@ function renderHomeSuppCard() {
       </div>
       ${morning.length ? `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:4px 0 2px">🌅 MORNING</div>${morning.map(row).join('')}` : ''}
       ${evening.length ? `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 2px">🌙 EVENING</div>${evening.map(row).join('')}` : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3)">Rotate 1 extra/day to use up stock</div>
+        <div onclick="setDailyExtraOn(${getDailyExtraOn() ? 'false' : 'true'})" style="width:40px;height:22px;border-radius:11px;background:${getDailyExtraOn() ? 'var(--accent)' : 'var(--surface2)'};border:1px solid ${getDailyExtraOn() ? 'var(--accent)' : 'var(--border2)'};position:relative;cursor:pointer;touch-action:manipulation;transition:all 0.15s">
+          <div style="width:16px;height:16px;border-radius:50%;background:${getDailyExtraOn() ? '#000' : 'var(--text3)'};position:absolute;top:2px;left:${getDailyExtraOn() ? '20px' : '2px'};transition:all 0.15s"></div>
+        </div>
+      </div>
       <div onclick="switchTab('supplements')" style="text-align:center;font-size:11px;color:var(--accent);margin-top:10px;cursor:pointer;touch-action:manipulation">Full stack & notes →</div>
     </div>`;
 }
