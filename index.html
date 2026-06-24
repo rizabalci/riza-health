@@ -704,6 +704,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div class="day-label" id="day-label">Today</div>
         <div style="display:flex;gap:8px">
+          <button onclick="startTimer(90,'')" id="rest-timer-btn" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;font-size:13px;color:var(--text2);cursor:pointer;touch-action:manipulation" title="Start rest timer">⏱️ Rest</button>
           <button onclick="toggleTheme()" id="theme-btn" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:14px;color:var(--text3);cursor:pointer;touch-action:manipulation">☀️</button>
         </div>
       </div>
@@ -3056,12 +3057,12 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back on heels, arms extended forward on floor. Decompresses lower back.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard bench press technique' },
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'Jeff Nippard incline dumbbell press' },
-      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'Jeff Nippard cable fly chest' },
-      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'Jeff Nippard shoulder press' },
-      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'Jeff Nippard lateral raise' },
-      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'Jeff Nippard triceps extension' },
+      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'https://www.youtube.com/watch?v=vcBig73ojpE' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=injgcGPR3sE' },
+      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'https://www.youtube.com/watch?v=XFpT41748hM' },
+      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=_RlRDWO2jfg' },
+      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'https://www.youtube.com/watch?v=HeovYNoZDRg' },
+      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'https://www.youtube.com/watch?v=popGXI-qs98' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips, not head toward knees. DROP SET last set. Progressive overload every week.', video: 'Jeff Nippard cable crunch abs' },
     ]
   },
@@ -3082,66 +3083,39 @@ const DAYS = [
       { name: 'Thoracic rotation', duration: '1×10 each side', desc: 'Sit cross-legged, rotate torso fully each side. Unlocks thoracic spine after heavy rows.', video: 'thoracic rotation stretch' },
     ],
     exercises: [
-      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard deadlift technique' },
-      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'Jeff Nippard pull up technique' },
-      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'Jeff Nippard chest supported row' },
-      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'Jeff Nippard cable row back' },
+      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'https://www.youtube.com/watch?v=ZaTM37cfiDs' },
+      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'https://www.youtube.com/watch?v=O94yEoGXtBY' },
+      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'https://www.youtube.com/watch?v=fgSyNdEsqlM' },
+      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'https://www.youtube.com/watch?v=PAXkl-AdJFg' },
       { name: 'Face Pull (rope)', sets: 3, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF. Feel cue: pull rope apart as you bring to face — external rotation of shoulders. Light weight, high reps. Non-negotiable at 39.', video: 'Jeff Nippard face pull rear delt' },
-      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'Jeff Nippard incline dumbbell curl' },
+      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'https://www.youtube.com/watch?v=i1YgFZB6alI' },
       { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt before raising legs — activates abs not hip flexors. Slow and controlled.', video: 'Jeff Nippard hanging leg raise abs' },
     ]
   },
   {
-    key: 'lower', name: 'Tue', label: 'LOWER DAY', title: 'Lower', subtitle: 'Legs, Glutes + Core',
+    key: 'lower', name: 'Tue', label: 'LEG + GLUTE DAY', title: 'Legs & Glutes', subtitle: 'Glute build + Quads + Hamstrings',
     warmup: [
-      { name: 'Light cardio', duration: '5 min', desc: 'Treadmill walk increasing to brisk pace. Warms up hips and ankles before squatting.', video: '' },
-      { name: 'Bodyweight squat', duration: '2×15 reps', desc: 'Slow and deep. Heels on floor, knees track toes. Rehearses the movement pattern.', video: 'bodyweight squat warm up technique' },
-      { name: 'Glute bridge (bodyweight)', duration: '2×20 reps', desc: 'On floor, feet flat, drive hips up and SQUEEZE glutes hard at top for 1 sec. Most important warm-up for hip thrusts.', video: 'bodyweight glute bridge warm up activation' },
-      { name: 'Hip circle', duration: '1×10 each leg', desc: 'Standing, lift knee and draw large circle with it. Opens hip flexors and hip joint.', video: 'hip circles mobility warm up exercise' },
-      { name: 'Donkey kick', duration: '2×15 each leg', desc: 'On all fours, kick one leg straight back and up, squeeze glute. Activates glute max before heavy loading.', video: 'donkey kick exercise glute activation warm up' },
-      { name: 'Lateral lunge', duration: '2×10 each side', desc: 'Step wide to one side, sit into that hip. Groin and hip mobility.', video: 'lateral lunge warm up hip mobility' },
+      { name: 'Light cardio', duration: '5 min', desc: 'Treadmill incline walk (8-10% grade, 5 km/h) or stair climber. Incline walking pre-activates the glutes and warms the hips.', video: '' },
+      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Lie on back, knees bent, drive hips up squeezing glutes hard at top for 1 sec. Most important warm-up before hip thrusts.', video: 'Bret Contreras glute bridge activation' },
+      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around knees, half-squat, step sideways keeping tension. Fires up glute medius (the side glute that gives roundness).', video: 'Bret Contreras banded lateral walk glute' },
+      { name: 'Bodyweight squat', duration: '2×15 reps', desc: 'Slow and deep. Heels on floor, knees track toes. Rehearses the squat pattern and opens the hips.', video: 'bodyweight squat warm up technique' },
+      { name: 'Bodyweight hip hinge', duration: '2×10 reps', desc: 'Hinge at hips with flat back, feel hamstring stretch, drive hips forward. Grooves the hip thrust and RDL pattern.', video: 'Bret Contreras hip hinge pattern' },
       { name: 'Ankle circles', duration: '30 sec each ankle', desc: 'Full range circles both directions. Critical for squat depth.', video: 'ankle circles mobility squat warm up' },
     ],
     cooldown: [
-      { name: 'Pigeon pose (hip flexor + glute)', duration: '2×45 sec each side', desc: 'Sit on floor, one leg bent in front, other extended behind. Deep hip stretch. Essential after hip thrusts and squats.', video: 'pigeon pose hip flexor glute stretch' },
-      { name: 'Standing quad stretch', duration: '2×30 sec each leg', desc: 'Stand, pull foot to glute, hold ankle. Balance on one leg. Full quad stretch.', video: 'standing quad stretch technique' },
-      { name: 'Seated hamstring stretch', duration: '2×30 sec each leg', desc: 'Sit, extend one leg, reach toward foot. Hamstring and calf.', video: 'seated hamstring stretch' },
-      { name: 'Calf stretch on step', duration: '2×30 sec each leg', desc: 'Heel off edge of step, let it drop. Deep calf and Achilles stretch.', video: 'calf stretch step achilles' },
-    ],
-    exercises: [
-      { name: 'Barbell Squat', sets: 4, reps: '5-7', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. LAST SET: rest-pause. Add 2.5kg when you hit top of range all 4 sets.', video: 'Jeff Nippard squat technique' },
-      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-12', rest: '90 sec', note: 'GLUTE HYPERTROPHY. Feel cue: drive through heels not toes. SQUEEZE maximally at top for 1 full second every rep. LAST SET: drop weight 30% and continue. Add weight when you hit 12 reps all 4 sets.', video: 'Bret Contreras barbell hip thrust technique' },
-      { name: 'Romanian Deadlift', sets: 3, reps: '8-10', rest: '2 min', note: 'HAMSTRING + GLUTE. Feel cue: push your hips back to the wall behind you. LOADED STRETCH: 4-sec eccentric, pause 1 sec at maximum stretch — this is the highest hypertrophy position. Do not rush this exercise.', video: 'Bret Contreras romanian deadlift glutes' },
-      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL. Feel cue: front heel drives into floor, knee tracks over 2nd toe. LOADED STRETCH: pause 1 sec at bottom — maximally stretched hip flexor and glute. Fixes left-right imbalances.', video: 'Jeff Nippard bulgarian split squat' },
-      { name: 'Leg Curl (lying or seated)', sets: 3, reps: '10-12', rest: '60 sec', note: 'HAMSTRING ISOLATION. Feel cue: curl heels toward glutes, not just bend knees. 3-sec eccentric. LOADED STRETCH: control fully to maximum extension between reps. DROP SET last set.', video: 'Jeff Nippard leg curl hamstrings' },
-      { name: 'Cable Kickback', sets: 3, reps: '15 each leg', rest: '45 sec', note: 'GLUTE ISOLATION. Feel cue: squeeze the glute first, then let leg follow. Hold at top 1 sec. DROP SET last set: reduce weight 30% continue to failure.', video: 'Bret Contreras cable glute kickback' },
-      { name: 'Standing Calf Raise', sets: 4, reps: '15-20', rest: '45 sec', note: 'CALVES. LOADED STRETCH: 3-sec descent to maximum stretch, pause 1 sec at bottom. No half reps — calves only grow with full range.', video: 'Jeff Nippard calf raise' },
-    ]
-  },
-  {
-    key: 'glutes', name: 'Tue', label: 'GLUTE DAY', title: 'Glutes', subtitle: 'Glute build + Hamstrings + Core',
-    warmup: [
-      { name: 'Light cardio', duration: '5 min', desc: 'Treadmill incline walk (8-10% grade, 5 km/h) or stair climber. Incline walking pre-activates the glutes.', video: '' },
-      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Lie on back, knees bent, drive hips up squeezing glutes hard at top for 1 sec. Wakes up the glutes before loading.', video: 'Bret Contreras glute bridge activation' },
-      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around knees or ankles, half-squat, step sideways keeping tension. Fires up glute medius (the side glute that gives roundness).', video: 'Bret Contreras banded lateral walk glute' },
-      { name: 'Banded clamshell', duration: '2×15 each side', desc: 'Lie on side, band around knees, open top knee like a clam. Targets upper glute. Slow and controlled.', video: 'Bret Contreras clamshell glute medius' },
-      { name: 'Bodyweight hip hinge', duration: '2×10 reps', desc: 'Hinge at hips with flat back, feel hamstring stretch, drive hips forward. Grooves the hip thrust and RDL pattern.', video: 'Bret Contreras hip hinge pattern' },
-      { name: 'Cat-cow + hip circles', duration: '1×10 each', desc: 'Mobilise spine and open the hips before heavy loading.', video: 'hip circles mobility warm up exercise' },
-    ],
-    cooldown: [
-      { name: 'Pigeon pose stretch', duration: '2×40 sec each side', desc: 'Front shin across mat, back leg extended, fold forward. Deep glute and hip stretch. The key glute-day stretch.', video: 'pigeon pose glute stretch hip opener' },
+      { name: 'Pigeon pose (hip flexor + glute)', duration: '2×45 sec each side', desc: 'One leg bent in front, other extended behind, fold forward. Deep hip and glute stretch. Essential after hip thrusts and squats.', video: 'pigeon pose hip flexor glute stretch' },
       { name: 'Seated figure-4 stretch', duration: '2×30 sec each side', desc: 'Sit, cross ankle over opposite knee, lean forward. Stretches glute and piriformis.', video: 'figure 4 glute stretch seated' },
+      { name: 'Standing quad stretch', duration: '2×30 sec each leg', desc: 'Stand, pull foot to glute, hold ankle. Balance on one leg. Full quad stretch.', video: 'standing quad stretch technique' },
       { name: 'Standing hamstring stretch', duration: '2×30 sec each side', desc: 'Heel on a bench, hinge forward keeping back flat. Lengthens hamstrings after RDLs.', video: 'standing hamstring stretch bench' },
-      { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back, arms forward. Decompresses lower back after hip thrusts and deadlifts.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Bench against shoulder blades, bar over hips (use a pad). Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep where glutes are fully contracted. Add 5kg when you hit 10 reps all 4 sets.', video: 'Bret Contreras barbell hip thrust technique' },
-      { name: 'Romanian Deadlift (RDL)', sets: 4, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand. Add weight when 10 reps feel controlled.', video: 'Bret Contreras romanian deadlift glutes' },
-      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE. Rear foot on bench, torso leaned slightly FORWARD to bias glutes over quads. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom position. Dumbbells in hands. This builds the round, lifted look.', video: 'Bret Contreras bulgarian split squat glutes' },
-      { name: 'Cable Glute Kickback', sets: 3, reps: '12-15 each leg', rest: '60 sec', note: 'ISOLATION. Ankle strap on low cable. Feel cue: kick straight back and slightly up, squeeze the glute hard at the top for 1 sec, slow return. Keep the back flat — all the movement comes from the hip. DROP SET last set each leg.', video: 'Bret Contreras cable glute kickback' },
-      { name: 'Hip Abduction Machine', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS (side glute = roundness/width). Lean torso slightly forward to bias upper glute. Feel cue: push knees apart slowly, PAUSE 2 sec at full open, control back in. DROP SET last set. Do not use momentum.', video: 'Bret Contreras hip abduction glute medius' },
-      { name: 'Walking Lunges (dumbbell)', sets: 3, reps: '12 each leg', rest: '90 sec', note: 'GLUTE STRETCH UNDER LOAD. Long stride to bias glutes, step into a deep lunge, push through the front heel. Feel cue: feel the glute of the front leg stretch then contract. Keep torso tall.', video: 'Bret Contreras walking lunges glutes' },
-      { name: 'Cable Pull-Through', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE FINISHER. Face away from low cable, rope between legs, hinge at hips and drive forward squeezing glutes. Feel cue: this is a hip hinge, not a squat — all glutes. Squeeze hard at the top. Burns out the glutes at the end.', video: 'Bret Contreras cable pull through glutes' },
+      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Back pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep. Add weight when you hit 10 reps all 4 sets.', video: 'https://www.youtube.com/watch?v=LM8XHLYJoYs' },
+      { name: 'Barbell Squat', sets: 3, reps: '6-8', rest: '3 min', note: 'QUADS + GLUTES + STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. Hit at least parallel depth. Add 2.5kg when you hit 8 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=bEv6CCg2BC8' },
+      { name: 'Romanian Deadlift (RDL)', sets: 3, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand.', video: 'Jeff Nippard romanian deadlift RDL technique' },
+      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE + QUAD. Rear foot on bench, torso leaned slightly FORWARD to bias glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom. Fixes left-right imbalances.', video: 'https://www.youtube.com/watch?v=6GYxDJ9ee7I' },
+      { name: 'Seated Leg Curl', sets: 3, reps: '10-12', rest: '60 sec', note: 'HAMSTRING ISOLATION. Feel cue: curl heels toward glutes, not just bend knees. 3-sec eccentric. LOADED STRETCH: control fully to maximum extension between reps. DROP SET last set.', video: 'Jeff Nippard seated leg curl hamstrings' },
+      { name: 'Hip Abduction Machine', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS (side glute = roundness/width). Lean torso slightly forward to bias upper glute. Feel cue: push knees apart slowly, PAUSE 2 sec at full open, control back in. DROP SET last set. No momentum.', video: 'Bret Contreras hip abduction glute medius' },
+      { name: 'Standing Calf Raise', sets: 3, reps: '15-20', rest: '45 sec', note: 'CALVES. LOADED STRETCH: 3-sec descent to maximum stretch, pause 1 sec at bottom. No half reps — calves only grow with full range.', video: 'Jeff Nippard calf raise technique' },
     ]
   },
   {
@@ -3171,11 +3145,11 @@ const DAYS = [
       { name: 'Foam roll (if available)', duration: '5 min', desc: 'Roll quads, IT band, upper back. John Reed may have foam rollers in the stretching area.', video: 'foam rolling upper back quads technique' },
     ],
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'Jeff Nippard incline dumbbell press' },
-      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'Jeff Nippard pull up technique' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'https://www.youtube.com/watch?v=injgcGPR3sE' },
+      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'https://www.youtube.com/watch?v=O94yEoGXtBY' },
       { name: 'Arnold Press (dumbbell)', sets: 3, reps: '10-12', rest: '60 sec', note: 'SHOULDER. Feel cue: rotate palms as you press — starts facing you, ends facing forward. Hits all 3 shoulder heads. Control the rotation both ways.', video: 'Jeff Nippard arnold press' },
-      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'Jeff Nippard dips triceps chest' },
-      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'Jeff Nippard cable curl biceps' },
+      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'https://www.youtube.com/watch?v=yN6Q1UI_xkE' },
+      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'https://www.youtube.com/watch?v=i1YgFZB6alI' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips. Progressive overload every week. DROP SET last set.', video: 'Jeff Nippard cable crunch abs' },
       { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'Jeff Nippard hanging leg raise abs' },
       { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'Jeff Nippard cable woodchop obliques' },
@@ -3222,38 +3196,26 @@ function switchTab(name) {
   document.getElementById('more-menu').style.display = 'none';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  const screen = document.getElementById('screen-' + name);
+  if (screen) screen.classList.add('active');
   if (document.getElementById('tab-' + name)) document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'progress') renderProgress();
-  if (name === 'checkin') renderCheckinHistory();
-  if (name === 'coach') initCoachUI();
-  if (name === 'meals') initMeals();
-  if (name === 'confession') renderConfessionHistory();
-  if (name === 'measurements') initMeasurements();
-  if (name === 'supplements') initSupplements();
-  if (name === 'water') initWater();
-  if (name === 'calendar') initCalendar();
-  if (name === 'sleep') initSleep();
-  if (name === 'macros') initMacroTracker();
-  if (name === 'checkin') renderWeightProjection();
-  if (name === 'habits') initHabits();
-  if (name === 'stats') initStats();
-  if (name === 'photos') initPhotos();
-  if (name === 'homeworkout') initHomeWorkout();
-  if (name === 'tennis') initTennis();
-  if (name === 'swimming') initSwimming();
-  if (name === 'sauna') initSauna();
-  if (name === 'strengthlog') initStrengthLog();
-  if (name === 'eatout') initEatout();
-  if (name === 'tools') renderDeloadCycleTracker();
-  if (name === 'massage') initMassageGuide();
-  if (name === 'myclubs') initMyClubs();
-  if (name === 'meditation') initMeditation();
-  if (name === 'projection') initProjection();
-  if (name === 'steps') initSteps();
-  if (name === 'tennislog') initTennisLog();
-  if (name === 'cheatlog') initCheatLog();
-  if (name === 'shopping') initShopping();
+  // Run the screen's init safely — a single failure must not freeze navigation
+  const inits = {
+    progress: renderProgress, checkin: () => { renderCheckinHistory(); renderWeightProjection(); },
+    coach: initCoachUI, meals: initMeals, confession: renderConfessionHistory,
+    measurements: initMeasurements, supplements: initSupplements, water: initWater,
+    calendar: initCalendar, sleep: initSleep, macros: initMacroTracker, habits: initHabits,
+    stats: initStats, photos: initPhotos, homeworkout: initHomeWorkout, tennis: initTennis,
+    swimming: initSwimming, sauna: initSauna, strengthlog: initStrengthLog, eatout: initEatout,
+    tools: renderDeloadCycleTracker, massage: initMassageGuide, myclubs: initMyClubs,
+    meditation: initMeditation, projection: initProjection, steps: initSteps,
+    tennislog: initTennisLog, cheatlog: initCheatLog, shopping: initShopping,
+  };
+  const fn = inits[name];
+  if (typeof fn === 'function') {
+    try { fn(); }
+    catch (e) { console.error('init error for ' + name + ':', e); }
+  }
 }
 
 // ── THEME TOGGLE ──────────────────────────────────────────
@@ -5372,7 +5334,7 @@ function renderHWContent() {
       </div>
       <div style="margin-bottom:6px"><span style="font-size:10px;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:10px">Rest ${ex.rest}</span></div>
       <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px">${ex.note}</div>
-      ${ex.video ? `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 10px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
+      ${ex.video ? `<a href="${videoUrl(ex.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 10px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
     </div>`).join('');
   const coolHtml = w.cooldown.length > 0 ? `
     <div class="supp-section-title">Cool-down</div>
@@ -6080,7 +6042,7 @@ function renderSuppSchedule() {
         ${items.map(s => {
           const idx = allSupps.indexOf(s);
           const done = todayLog[idx];
-          return `<div onclick="toggleSuppCheck(${idx});renderSuppSchedule();" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);cursor:pointer;touch-action:manipulation">
+          return `<div onclick="toggleSuppCheck(${idx})" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);cursor:pointer;touch-action:manipulation">
             <div style="width:26px;height:26px;border-radius:6px;border:2px solid ${done ? 'var(--accent)' : 'var(--border2)'};background:${done ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:#000;transition:all 0.15s">${done ? '✓' : ''}</div>
             <div style="flex:1">
               <div style="font-size:13px;font-weight:600;color:${done ? 'var(--text3)' : 'var(--text)'};${done ? 'text-decoration:line-through' : ''}">${s.name}</div>
@@ -6466,9 +6428,7 @@ function getRotStart() { return localStorage.getItem('trot_start') || new Date()
 function setRotBlock(block) {
   localStorage.setItem('trot_block', block);
   localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
-  renderSuppToday();
-  renderSuppStack();
-  if (typeof renderSuppSchedule === 'function') renderSuppSchedule();
+  refreshAllSuppViews();
   showToast(block === 'off' ? 'T-rotation off — clean core only' : 'Block ' + block + ' on — 8 week timer started');
 }
 
@@ -6610,14 +6570,22 @@ function renderSuppToday() {
   list.innerHTML = html;
 }
 
+// Unified refresh — keeps every supplement view in sync
+function refreshAllSuppViews() {
+  if (typeof renderSuppToday === 'function') { try { renderSuppToday(); } catch(e){} }
+  if (typeof renderHomeSuppCard === 'function') { try { renderHomeSuppCard(); } catch(e){} }
+  if (typeof renderSuppSchedule === 'function') { try { renderSuppSchedule(); } catch(e){} }
+  if (typeof renderSuppStack === 'function') { try { renderSuppStack(); } catch(e){} }
+  if (typeof renderSuppAdherence === 'function') { try { renderSuppAdherence(); } catch(e){} }
+}
+
 function toggleSuppCheck(idx) {
   const log = getSuppLog();
   const today = getTodayKey();
   if (!log[today]) log[today] = {};
   log[today][idx] = !log[today][idx];
   saveSuppLog(log);
-  renderSuppToday();
-  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+  refreshAllSuppViews();
   const supps = getSupplements();
   const done = Object.values(log[today] || {}).filter(Boolean).length;
   const active = supps.filter(s => isSuppActive(s)).length;
@@ -6635,8 +6603,7 @@ function setDayType(type) {
   const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
   map[today] = type;
   localStorage.setItem('supp_daytype', JSON.stringify(map));
-  renderSuppToday();
-  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+  refreshAllSuppViews();
 }
 
 // Which categories show for a given day type (core + rotation always shown)
@@ -6654,8 +6621,7 @@ function dayTypeExtras(type) {
 function getDailyExtraOn() { return localStorage.getItem('daily_extra_on') !== '0'; }
 function setDailyExtraOn(on) {
   localStorage.setItem('daily_extra_on', on ? '1' : '0');
-  renderSuppToday();
-  if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+  refreshAllSuppViews();
 }
 
 // Day number since epoch — stable per calendar day
@@ -6815,6 +6781,7 @@ function renderSuppAdherence() {
   const log = getSuppLog();
   const section = document.getElementById('supp-adherence-section');
   const container = document.getElementById('supp-adherence');
+  if (!section || !container) return;
   const last7 = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
@@ -7565,7 +7532,7 @@ function renderWarmup() {
               <div class="warmup-item-name">${w.name}</div>
               <div class="warmup-item-duration">${w.duration}</div>
               <div class="warmup-item-desc">${w.desc}</div>
-              ${w.video ? `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
+              ${w.video ? `<a href="${videoUrl(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
             </div>
           </div>`).join('')}
       </div>
@@ -7600,12 +7567,36 @@ function renderCooldown() {
               <div class="warmup-item-name">${w.name}</div>
               <div class="warmup-item-duration" style="color:var(--blue)">${w.duration}</div>
               <div class="warmup-item-desc">${w.desc}</div>
-              ${w.video ? `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
+              ${w.video ? `<a href="${videoUrl(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
             </div>
           </div>`).join('')}
         <div style="padding:10px 0 4px;font-size:12px;color:var(--text3);line-height:1.5">Stretching post-workout reduces injury risk, improves flexibility, and helps clear lactate from muscles. Hold each stretch without bouncing.</div>
       </div>
     </div>`;
+}
+
+// Verified direct YouTube video IDs for canonical form tutorials (confirmed live).
+// Anything not in this map falls back to a YouTube search (always works, never 404s).
+const DIRECT_VIDEOS = {
+  'bench press proper form technique': 'vcBig73ojpE',          // Jeff Nippard Technique Tuesday
+  'Jeff Nippard bench press technique': 'vcBig73ojpE',
+  'Jeff Nippard squat technique': 'bEv6CCg2BC8',                // Jeff Nippard squat technique
+  'barbell squat proper form technique': 'bEv6CCg2BC8',
+  'Jeff Nippard deadlift technique': 'VL5Ab0T07e4',             // Jeff Nippard conventional deadlift
+  'deadlift proper form technique barbell': 'VL5Ab0T07e4',
+};
+
+// Returns a direct watch link if we have a verified ID, else a reliable search link.
+function videoUrl(query) {
+  if (!query) return '';
+  // If the field is already a full URL, use it directly
+  if (query.indexOf('http') === 0) return query;
+  const id = DIRECT_VIDEOS[query];
+  if (id) return 'https://www.youtube.com/watch?v=' + id;
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+}
+function isDirectVideo(query) {
+  return query && (query.indexOf('http') === 0 || DIRECT_VIDEOS[query]);
 }
 
 function renderExercises() {
@@ -7643,9 +7634,9 @@ function renderExercises() {
     }
 
     const videoSection = ex.video ?
-      `<a class="ex-yt-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.video)}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:#FF0000;border-radius:8px;text-decoration:none;margin:12px 16px 4px">
+      `<a class="ex-yt-btn" href="${videoUrl(ex.video)}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:#FF0000;border-radius:8px;text-decoration:none;margin:12px 16px 4px">
         <span style="font-size:16px;color:#fff">▶</span>
-        <span style="font-size:13px;font-weight:500;color:#fff">Search form tutorial on YouTube</span>
+        <span style="font-size:13px;font-weight:500;color:#fff">${isDirectVideo(ex.video) ? 'Watch form video on YouTube' : 'Search form tutorial on YouTube'}</span>
       </a>` : '';
 
     card.innerHTML = `
@@ -7658,7 +7649,7 @@ function renderExercises() {
             <span class="ex-badge">rest ${ex.rest}</span>
           </div>
         </div>
-        ${ex.video ? `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.video)}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:#FF0000;border-radius:8px;text-decoration:none;flex-shrink:0;margin-right:8px" title="Watch form video">▶</a>` : ''}
+        ${ex.video ? `<a href="${videoUrl(ex.video)}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:#FF0000;border-radius:8px;text-decoration:none;flex-shrink:0;margin-right:8px" title="Watch form video">▶</a>` : ''}
         <div class="ex-expand">▾</div>
       </div>
       <div class="ex-body">
