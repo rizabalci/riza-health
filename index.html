@@ -84,6 +84,10 @@
 
   .ex-body { display: none; border-top: 1px solid var(--border); }
   .ex-card.open .ex-body { display: block; }
+  .ex-card.logged { border-color: #22c55e; }
+  .ex-card.logged .ex-num { background: #22c55e; color: #fff; }
+  .ex-card.logged .ex-num::after { content: ''; }
+  .log-save-btn.saved { background: #22c55e; color: #fff; }
 
   .ex-video { width: 100%; border-top: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .ex-video video { width: 100%; max-height: 220px; object-fit: contain; display: block; }
@@ -97,6 +101,10 @@
 
   /* LOG SETS */
   .log-section { padding: 12px 12px 16px; }
+  .last-time-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; margin-bottom: 10px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); }
+  .last-time-row.empty { border-left-color: var(--border2); justify-content: center; }
+  .last-time-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+  .last-time-sets { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; text-align: right; }
   .log-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
   .set-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
   .set-num { width: 18px; font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; flex-shrink: 0; text-align: center; }
@@ -723,12 +731,22 @@
 
     <!-- COOLDOWN SECTION -->
     <div id="cooldown-section" style="margin-top:4px"></div>
+
+    <div style="padding:8px 10px 24px">
+      <button onclick="finishWorkout()" style="width:100%;padding:16px;background:var(--accent);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;min-height:54px">🏁 Finish Workout</button>
+    </div>
   </div>
 
-  <!-- PROGRESS SCREEN -->
+  <!-- FINISH WORKOUT SUMMARY MODAL -->
+  <div id="finish-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--surface);border-radius:16px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;border:1px solid var(--border)">
+      <div id="finish-content" style="padding:22px"></div>
+    </div>
+  </div>
   <div class="screen" id="screen-progress">
     <div class="progress-wrap">
       <div class="progress-title">Progress</div>
+      <div id="gym-weekly-wrap"></div>
       <div class="chart-wrap" id="weight-chart-wrap" style="display:none">
         <div class="chart-title">Body weight (kg)</div>
         <canvas id="weightChart" height="120"></canvas>
@@ -3025,6 +3043,7 @@
     <button class="timer-btn" onclick="skipTimer()">Skip</button>
     <button class="timer-btn primary" id="timer-pause-btn" onclick="toggleTimerPause()">Pause</button>
   </div>
+  <div style="margin-top:12px"><button class="timer-btn" id="timer-sound-btn" onclick="toggleTimerSound()" style="font-size:13px">🔊 Sound on</button></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3048,12 +3067,12 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back on heels, arms extended forward on floor. Decompresses lower back.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'https://www.youtube.com/watch?v=vcBig73ojpE' },
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=injgcGPR3sE' },
-      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'https://www.youtube.com/watch?v=XFpT41748hM' },
-      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=_RlRDWO2jfg' },
-      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'https://www.youtube.com/watch?v=HeovYNoZDRg' },
-      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'https://www.youtube.com/watch?v=popGXI-qs98' },
+      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'barbell bench press' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'incline dumbbell press technique upper chest' },
+      { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'cable chest fly' },
+      { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'seated overhead press' },
+      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'cable lateral raise' },
+      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'overhead triceps extension' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips, not head toward knees. DROP SET last set. Progressive overload every week.', video: 'Jeff Nippard cable crunch abs' },
     ]
   },
@@ -3074,12 +3093,12 @@ const DAYS = [
       { name: 'Thoracic rotation', duration: '1×10 each side', desc: 'Sit cross-legged, rotate torso fully each side. Unlocks thoracic spine after heavy rows.', video: 'thoracic rotation stretch' },
     ],
     exercises: [
-      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'https://www.youtube.com/watch?v=ZaTM37cfiDs' },
-      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'https://www.youtube.com/watch?v=O94yEoGXtBY' },
-      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'https://www.youtube.com/watch?v=fgSyNdEsqlM' },
-      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'https://www.youtube.com/watch?v=PAXkl-AdJFg' },
+      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'conventional deadlift' },
+      { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'pull up' },
+      { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'chest supported dumbbell row' },
+      { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'seated cable row' },
       { name: 'Face Pull (rope)', sets: 3, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF. Feel cue: pull rope apart as you bring to face — external rotation of shoulders. Light weight, high reps. Non-negotiable at 39.', video: 'Jeff Nippard face pull rear delt' },
-      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'https://www.youtube.com/watch?v=i1YgFZB6alI' },
+      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'dumbbell bicep curl' },
       { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt before raising legs — activates abs not hip flexors. Slow and controlled.', video: 'Jeff Nippard hanging leg raise abs' },
     ]
   },
@@ -3100,10 +3119,10 @@ const DAYS = [
       { name: 'Standing hamstring stretch', duration: '2×30 sec each side', desc: 'Heel on a bench, hinge forward keeping back flat. Lengthens hamstrings after RDLs.', video: 'standing hamstring stretch bench' },
     ],
     exercises: [
-      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Back pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep. Add weight when you hit 10 reps all 4 sets.', video: 'https://www.youtube.com/watch?v=LM8XHLYJoYs' },
-      { name: 'Barbell Squat', sets: 3, reps: '6-8', rest: '3 min', note: 'QUADS + GLUTES + STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. Hit at least parallel depth. Add 2.5kg when you hit 8 reps all 3 sets.', video: 'https://www.youtube.com/watch?v=bEv6CCg2BC8' },
+      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Back pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep. Add weight when you hit 10 reps all 4 sets.', video: 'hip thrust' },
+      { name: 'Barbell Squat', sets: 3, reps: '6-8', rest: '3 min', note: 'QUADS + GLUTES + STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. Hit at least parallel depth. Add 2.5kg when you hit 8 reps all 3 sets.', video: 'barbell squat' },
       { name: 'Romanian Deadlift (RDL)', sets: 3, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand.', video: 'Jeff Nippard romanian deadlift RDL technique' },
-      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE + QUAD. Rear foot on bench, torso leaned slightly FORWARD to bias glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom. Fixes left-right imbalances.', video: 'https://www.youtube.com/watch?v=6GYxDJ9ee7I' },
+      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE + QUAD. Rear foot on bench, torso leaned slightly FORWARD to bias glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom. Fixes left-right imbalances.', video: 'bulgarian split squat' },
       { name: 'Seated Leg Curl', sets: 3, reps: '10-12', rest: '60 sec', note: 'HAMSTRING ISOLATION. Feel cue: curl heels toward glutes, not just bend knees. 3-sec eccentric. LOADED STRETCH: control fully to maximum extension between reps. DROP SET last set.', video: 'Jeff Nippard seated leg curl hamstrings' },
       { name: 'Hip Abduction Machine', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS (side glute = roundness/width). Lean torso slightly forward to bias upper glute. Feel cue: push knees apart slowly, PAUSE 2 sec at full open, control back in. DROP SET last set. No momentum.', video: 'Bret Contreras hip abduction glute medius' },
       { name: 'Standing Calf Raise', sets: 3, reps: '15-20', rest: '45 sec', note: 'CALVES. LOADED STRETCH: 3-sec descent to maximum stretch, pause 1 sec at bottom. No half reps — calves only grow with full range.', video: 'Jeff Nippard calf raise technique' },
@@ -3136,11 +3155,11 @@ const DAYS = [
       { name: 'Foam roll (if available)', duration: '5 min', desc: 'Roll quads, IT band, upper back. John Reed may have foam rollers in the stretching area.', video: 'foam rolling upper back quads technique' },
     ],
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'https://www.youtube.com/watch?v=injgcGPR3sE' },
-      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'https://www.youtube.com/watch?v=O94yEoGXtBY' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'incline dumbbell press technique upper chest' },
+      { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'pull up' },
       { name: 'Arnold Press (dumbbell)', sets: 3, reps: '10-12', rest: '60 sec', note: 'SHOULDER. Feel cue: rotate palms as you press — starts facing you, ends facing forward. Hits all 3 shoulder heads. Control the rotation both ways.', video: 'Jeff Nippard arnold press' },
-      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'https://www.youtube.com/watch?v=yN6Q1UI_xkE' },
-      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'https://www.youtube.com/watch?v=i1YgFZB6alI' },
+      { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'parallel bar dips' },
+      { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'dumbbell bicep curl' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips. Progressive overload every week. DROP SET last set.', video: 'Jeff Nippard cable crunch abs' },
       { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'Jeff Nippard hanging leg raise abs' },
       { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'Jeff Nippard cable woodchop obliques' },
@@ -7500,6 +7519,56 @@ function getSavedLog(dayKey, exIdx) {
   try { return JSON.parse(localStorage.getItem(getLogKey(dayKey, exIdx))) || {}; } catch(e) { return {}; }
 }
 
+// Find the most recent PRIOR log (before today) for this exercise — for progressive-overload reference
+function getLastTimeLog(dayKey, exIdx) {
+  const today = new Date().toISOString().split('T')[0];
+  const prefix = `log_${dayKey}_${exIdx}_`;
+  let bestDate = null, bestLog = null;
+  for (let k in localStorage) {
+    if (!k.startsWith(prefix)) continue;
+    const date = k.slice(prefix.length);
+    if (date >= today) continue; // skip today and anything future
+    try {
+      const log = JSON.parse(localStorage.getItem(k));
+      const hasData = Object.values(log).some(s => s && (s.kg || s.reps));
+      if (!hasData) continue;
+      if (!bestDate || date > bestDate) { bestDate = date; bestLog = log; }
+    } catch(e) {}
+  }
+  if (!bestLog) return null;
+  // Build a compact summary string: top set (heaviest) + date
+  let topKg = 0, summary = [];
+  Object.keys(bestLog).sort((a,b)=>a-b).forEach(s => {
+    const set = bestLog[s];
+    if (set && (set.kg || set.reps)) {
+      summary.push(`${set.kg || '?'}×${set.reps || '?'}`);
+      const kg = parseFloat(set.kg) || 0;
+      if (kg > topKg) topKg = kg;
+    }
+  });
+  return { date: bestDate, sets: summary, topKg, log: bestLog };
+}
+
+// Best ever top-set weight for an exercise (for PR detection)
+function getBestEver(dayKey, exIdx, beforeToday) {
+  const today = new Date().toISOString().split('T')[0];
+  const prefix = `log_${dayKey}_${exIdx}_`;
+  let best = 0;
+  for (let k in localStorage) {
+    if (!k.startsWith(prefix)) continue;
+    const date = k.slice(prefix.length);
+    if (beforeToday && date >= today) continue;
+    try {
+      const log = JSON.parse(localStorage.getItem(k));
+      Object.values(log).forEach(s => {
+        const kg = parseFloat(s && s.kg) || 0;
+        if (kg > best) best = kg;
+      });
+    } catch(e) {}
+  }
+  return best;
+}
+
 function renderWarmup() {
   const day = DAYS[currentDay];
   const section = document.getElementById('warmup-section');
@@ -7577,14 +7646,20 @@ const DIRECT_VIDEOS = {
   'deadlift proper form technique barbell': 'VL5Ab0T07e4',
 };
 
-// Returns a direct watch link if we have a verified ID, else a reliable search link.
+// Returns a direct watch link if we have a verified ID, else a Shorts-targeted search link.
 function videoUrl(query) {
   if (!query) return '';
   // If the field is already a full URL, use it directly
   if (query.indexOf('http') === 0) return query;
   const id = DIRECT_VIDEOS[query];
-  if (id) return 'https://www.youtube.com/watch?v=' + id;
-  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+  if (id) {
+    // Verified Short IDs are stored with a 'short:' prefix → use /shorts/ URL
+    if (id.indexOf('short:') === 0) return 'https://www.youtube.com/shorts/' + id.slice(6);
+    return 'https://www.youtube.com/watch?v=' + id;
+  }
+  // No verified video → search, biased to Shorts (short, vertical how-to clips)
+  // EgIYAQ%3D%3D is YouTube's "Shorts" search filter token
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query + ' how to short') + '&sp=EgIYAQ%253D%253D';
 }
 function isDirectVideo(query) {
   return query && (query.indexOf('http') === 0 || DIRECT_VIDEOS[query]);
@@ -7600,6 +7675,8 @@ function renderExercises() {
     card.className = 'ex-card';
     card.id = `ex-card-${i}`;
     const savedLog = getSavedLog(day.key, i);
+    const alreadyLogged = isExerciseLoggedToday(day.key, i);
+    if (alreadyLogged) card.classList.add('logged');
     const hasSets = ex.sets > 0 && !isNaN(ex.sets);
     const setsCount = hasSets ? parseInt(ex.sets) : 1;
 
@@ -7630,6 +7707,19 @@ function renderExercises() {
         <span style="font-size:13px;font-weight:500;color:#fff">${isDirectVideo(ex.video) ? 'Watch form video on YouTube' : 'Search form tutorial on YouTube'}</span>
       </a>` : '';
 
+    // Last-time reference (progressive overload)
+    let lastTimeHtml = '';
+    if (hasSets) {
+      const lt = getLastTimeLog(day.key, i);
+      if (lt) {
+        const d = new Date(lt.date + 'T12:00:00');
+        const dateStr = d.getDate() + '/' + (d.getMonth() + 1);
+        lastTimeHtml = `<div class="last-time-row"><span class="last-time-label">Last time (${dateStr})</span><span class="last-time-sets">${lt.sets.join('  ·  ')}</span></div>`;
+      } else {
+        lastTimeHtml = `<div class="last-time-row empty"><span class="last-time-label">First time logging this</span></div>`;
+      }
+    }
+
     card.innerHTML = `
       <div class="ex-header" onclick="toggleCard(${i})">
         <div class="ex-num">${i+1}</div>
@@ -7653,7 +7743,7 @@ function renderExercises() {
           </div>
           <div class="ex-note">${ex.note}</div>
         </div>
-        ${hasSets ? `<div class="log-section"><div class="log-title">Log Sets</div>${setsRows}<button class="log-save-btn" onclick="saveLog(${i})">Save Sets</button></div>` : ''}
+        ${hasSets ? `<div class="log-section"><div class="log-title">Log Sets</div>${lastTimeHtml}${setsRows}<button class="log-save-btn${alreadyLogged ? ' saved' : ''}" onclick="saveLog(${i})">${alreadyLogged ? '✓ Saved' : 'Save Sets'}</button></div>` : ''}
       </div>`;
     list.appendChild(card);
   });
@@ -7675,17 +7765,41 @@ let timerEndTime = null;
 let timerPausedRemaining = null;
 const CIRCUMFERENCE = 502.65;
 
+let timerExName = '';
+
 function startTimer(durationSec, exName) {
   if (timerInterval) clearInterval(timerInterval);
   timerTotal = durationSec;
   timerPaused = false;
   timerEndTime = Date.now() + durationSec * 1000;
   timerPausedRemaining = null;
+  timerExName = exName || '';
+  unlockTimerSound();
+  persistTimer();
   document.getElementById('timer-overlay').style.display = 'flex';
   document.getElementById('timer-ex-name').textContent = exName ? 'Rest after: ' + exName : '';
   document.getElementById('timer-pause-btn').textContent = 'Pause';
+  updateSoundBtn();
   updateTimerDisplay();
+  startTicking();
+}
+
+function startTicking() {
+  if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(timerTick, 250);
+}
+
+function persistTimer() {
+  try {
+    localStorage.setItem('active_rest_timer', JSON.stringify({
+      endTime: timerEndTime, total: timerTotal, exName: timerExName,
+      paused: timerPaused, pausedRemaining: timerPausedRemaining
+    }));
+  } catch(e) {}
+}
+
+function clearPersistedTimer() {
+  try { localStorage.removeItem('active_rest_timer'); } catch(e) {}
 }
 
 function timerTick() {
@@ -7694,6 +7808,7 @@ function timerTick() {
   updateTimerDisplayVal(remaining);
   if (remaining <= 0) {
     clearInterval(timerInterval);
+    timerInterval = null;
     timerDone();
   }
 }
@@ -7717,7 +7832,7 @@ function updateTimerDisplayVal(remaining) {
 function setTimerDuration(sec) {
   document.querySelectorAll('.timer-preset').forEach(p => p.classList.remove('active'));
   event.target.classList.add('active');
-  startTimer(sec, document.getElementById('timer-ex-name').textContent.replace('Rest after: ', ''));
+  startTimer(sec, timerExName);
 }
 
 function toggleTimerPause() {
@@ -7727,34 +7842,122 @@ function toggleTimerPause() {
   } else {
     timerEndTime = Date.now() + timerPausedRemaining * 1000;
     timerPausedRemaining = null;
+    startTicking();
   }
+  persistTimer();
   document.getElementById('timer-pause-btn').textContent = timerPaused ? 'Resume' : 'Pause';
 }
 
 function skipTimer() {
   if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
   timerEndTime = null;
+  clearPersistedTimer();
   document.getElementById('timer-overlay').style.display = 'none';
 }
 
 function timerDone() {
   document.getElementById('timer-overlay').style.display = 'none';
+  timerEndTime = null;
+  clearPersistedTimer();
+  playTimerSound();
   if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
   showToast('Rest done. Next set!');
 }
 
-// Recalculate timer when app comes back into focus
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && timerEndTime && !timerPaused) {
-    const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
-    if (remaining <= 0) {
-      clearInterval(timerInterval);
-      timerDone();
-    } else {
-      updateTimerDisplayVal(remaining);
+// --- Sound: unlock on user tap (iOS requires gesture), beep on completion ---
+let timerAudioCtx = null;
+function unlockTimerSound() {
+  try {
+    if (!timerAudioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) timerAudioCtx = new AC();
     }
+    if (timerAudioCtx && timerAudioCtx.state === 'suspended') timerAudioCtx.resume();
+  } catch(e) {}
+}
+function playTimerSound() {
+  if (localStorage.getItem('timer_sound_off') === '1') return;
+  try {
+    if (!timerAudioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) timerAudioCtx = new AC();
+    }
+    if (!timerAudioCtx) return;
+    if (timerAudioCtx.state === 'suspended') timerAudioCtx.resume();
+    const now = timerAudioCtx.currentTime;
+    // Two rounds of a rising 3-note chime = clearly audible "time's up" alarm
+    const notes = [
+      { f: 660, t: 0.00 }, { f: 880, t: 0.16 }, { f: 1175, t: 0.32 },
+      { f: 660, t: 0.60 }, { f: 880, t: 0.76 }, { f: 1175, t: 0.92 },
+    ];
+    notes.forEach(n => {
+      const osc = timerAudioCtx.createOscillator();
+      const gain = timerAudioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = n.f;
+      gain.gain.setValueAtTime(0.0001, now + n.t);
+      gain.gain.exponentialRampToValueAtTime(0.6, now + n.t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + n.t + 0.22);
+      osc.connect(gain); gain.connect(timerAudioCtx.destination);
+      osc.start(now + n.t); osc.stop(now + n.t + 0.24);
+    });
+  } catch(e) {}
+}
+
+function isTimerSoundOn() { return localStorage.getItem('timer_sound_off') !== '1'; }
+function toggleTimerSound() {
+  const off = localStorage.getItem('timer_sound_off') === '1';
+  localStorage.setItem('timer_sound_off', off ? '0' : '1');
+  if (off) { unlockTimerSound(); playTimerSound(); } // turning ON: preview
+  updateSoundBtn();
+}
+function updateSoundBtn() {
+  const btn = document.getElementById('timer-sound-btn');
+  if (btn) btn.textContent = isTimerSoundOn() ? '🔊 Sound on' : '🔇 Sound off';
+}
+
+// Restore an active timer if the page was reopened/discarded by iOS
+function restoreActiveTimer() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem('active_rest_timer') || 'null'); } catch(e) { saved = null; }
+  if (!saved || !saved.endTime) return;
+  timerTotal = saved.total || 60;
+  timerExName = saved.exName || '';
+  timerPaused = !!saved.paused;
+  if (timerPaused) {
+    timerPausedRemaining = saved.pausedRemaining || 0;
+    timerEndTime = Date.now() + timerPausedRemaining * 1000;
+  } else {
+    timerEndTime = saved.endTime;
   }
+  const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+  if (!timerPaused && remaining <= 0) { timerDone(); return; }
+  document.getElementById('timer-overlay').style.display = 'flex';
+  document.getElementById('timer-ex-name').textContent = timerExName ? 'Rest after: ' + timerExName : '';
+  document.getElementById('timer-pause-btn').textContent = timerPaused ? 'Resume' : 'Pause';
+  updateTimerDisplay();
+  if (!timerPaused) startTicking();
+}
+
+// Resume ticking and recalc whenever the app returns to the foreground
+function resumeTimerOnReturn() {
+  if (!timerEndTime || timerPaused) return;
+  const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+  if (remaining <= 0) {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    timerDone();
+  } else {
+    updateTimerDisplayVal(remaining);
+    startTicking();
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) resumeTimerOnReturn();
 });
+window.addEventListener('pageshow', resumeTimerOnReturn);
+window.addEventListener('focus', resumeTimerOnReturn);
 
 function toggleDone(exIdx, setNum) {
   const btn = document.getElementById(`done-${exIdx}-${setNum}`);
@@ -7792,10 +7995,243 @@ function saveLog(exIdx) {
     log[s] = { kg: kg || '', reps: reps || '', done };
   }
   localStorage.setItem(getLogKey(day.key, exIdx), JSON.stringify(log));
-  showToast('Sets saved');
+  // Visual confirmation: turn the exercise green
+  const card = document.getElementById(`ex-card-${exIdx}`);
+  if (card) card.classList.add('logged');
+  const btn = card ? card.querySelector('.log-save-btn') : null;
+  if (btn) { btn.classList.add('saved'); btn.textContent = '✓ Saved'; }
+  showToast('Sets saved ✓');
+}
+
+// Does a saved log exist for this exercise today, with real data?
+function isExerciseLoggedToday(dayKey, exIdx) {
+  try {
+    const raw = localStorage.getItem(getLogKey(dayKey, exIdx));
+    if (!raw) return false;
+    const log = JSON.parse(raw);
+    return Object.values(log).some(s => s && (s.kg || s.reps || s.done));
+  } catch(e) { return false; }
+}
+
+function finishWorkout() {
+  const day = DAYS[currentDay];
+  if (!day) return;
+  let exDone = 0, setsLogged = 0, totalVolume = 0;
+  const prs = [];
+  day.exercises.forEach((ex, i) => {
+    const log = getSavedLog(day.key, i);
+    let exHasData = false, topKgToday = 0;
+    Object.values(log).forEach(s => {
+      if (s && (s.kg || s.reps)) {
+        exHasData = true; setsLogged++;
+        const kg = parseFloat(s.kg) || 0;
+        const reps = parseInt(s.reps) || 0;
+        totalVolume += kg * reps;
+        if (kg > topKgToday) topKgToday = kg;
+      }
+    });
+    if (exHasData) {
+      exDone++;
+      // PR check: today's top set beats best ever before today
+      const prevBest = getBestEver(day.key, i, true);
+      if (topKgToday > 0 && topKgToday > prevBest && prevBest > 0) {
+        prs.push({ name: ex.name, kg: topKgToday, prev: prevBest });
+      }
+    }
+  });
+  const totalEx = day.exercises.length;
+  const pct = totalEx ? Math.round((exDone / totalEx) * 100) : 0;
+
+  let prHtml = '';
+  if (prs.length) {
+    prHtml = `<div style="margin:14px 0;padding:12px;background:rgba(34,197,94,0.12);border:1px solid #22c55e;border-radius:10px">
+      <div style="font-size:13px;font-weight:700;color:#22c55e;margin-bottom:6px">🏆 New Personal Record${prs.length>1?'s':''}!</div>
+      ${prs.map(p=>`<div style="font-size:13px;margin:3px 0">${p.name}: <strong>${p.kg}kg</strong> <span style="color:var(--muted)">(was ${p.prev}kg)</span></div>`).join('')}
+    </div>`;
+  }
+
+  let msg = '', msgColor = 'var(--accent)';
+  if (pct >= 80) { msg = 'Full session done. Strong work.'; }
+  else if (pct >= 50) { msg = 'Solid session logged.'; }
+  else if (pct > 0) { msg = 'Partial session. Every rep counts.'; }
+  else { msg = 'Nothing logged yet. Log your sets to count this as a gym day.'; msgColor = 'var(--muted)'; }
+
+  document.getElementById('finish-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:6px">
+      <div style="font-size:40px">${pct>=80?'💪':pct>=50?'✅':'📋'}</div>
+      <div style="font-size:20px;font-weight:800;margin-top:4px">${day.title}</div>
+      <div style="font-size:13px;color:${msgColor};margin-top:2px">${msg}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin:16px 0">
+      <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--accent)">${exDone}/${totalEx}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">EXERCISES</div>
+      </div>
+      <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800">${setsLogged}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">SETS</div>
+      </div>
+      <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800">${Math.round(totalVolume).toLocaleString()}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">VOLUME kg</div>
+      </div>
+    </div>
+    ${prHtml}
+    <button onclick="closeFinish()" style="width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px;min-height:50px">Done</button>
+    <button onclick="closeFinish();switchTab('progress')" style="width:100%;padding:12px;background:transparent;color:var(--text2);border:none;font-size:13px;cursor:pointer;margin-top:6px">View weekly progress →</button>
+  `;
+  document.getElementById('finish-overlay').style.display = 'flex';
+}
+
+function closeFinish() {
+  document.getElementById('finish-overlay').style.display = 'none';
+}
+
+function getISOWeek(d) {
+  // Returns [year, weekNumber] ISO-8601, week starts Monday
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const firstDayNum = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNum + 3);
+  const week = 1 + Math.round((date - firstThursday) / (7 * 24 * 3600 * 1000));
+  return [date.getUTCFullYear(), week];
+}
+
+function getMondayOf(d) {
+  const date = new Date(d);
+  const dayNum = (date.getDay() + 6) % 7; // Mon=0
+  date.setDate(date.getDate() - dayNum);
+  return date;
+}
+
+function renderGymWeekly() {
+  const wrap = document.getElementById('gym-weekly-wrap');
+  if (!wrap) return;
+
+  // Count, per date, how many distinct exercises were logged with data, and the day's total exercises.
+  const perDate = {}; // date -> { dayKey, loggedExIdx:Set }
+  for (let k in localStorage) {
+    if (!k.startsWith('log_')) continue;
+    try {
+      const parts = k.split('_');
+      const date = parts[parts.length - 1];
+      const dayKey = parts[1];
+      const exIdx = parseInt(parts[2]);
+      const data = JSON.parse(localStorage.getItem(k));
+      // count as logged only if at least one set has kg or reps entered
+      const hasData = Object.values(data).some(s => s && (s.kg || s.reps));
+      if (!hasData) continue;
+      if (!perDate[date]) perDate[date] = { dayKey, ex: new Set() };
+      perDate[date].ex.add(exIdx);
+    } catch(e) {}
+  }
+
+  // "Full session" = logged at least half (rounded up) of that day's exercises.
+  const fullDays = [];
+  Object.keys(perDate).forEach(date => {
+    const { dayKey, ex } = perDate[date];
+    const day = DAYS.find(d => d.key === dayKey);
+    const total = day ? day.exercises.length : 0;
+    const threshold = total ? Math.ceil(total / 2) : 1;
+    if (ex.size >= threshold) fullDays.push(date);
+  });
+
+  if (fullDays.length === 0) {
+    wrap.innerHTML = `<div class="chart-wrap"><div class="chart-title">Gym days per week</div><div style="padding:16px 4px;color:var(--muted);font-size:13px">No full sessions logged yet. Log your sets during a workout and your weekly attendance will show up here.</div></div>`;
+    return;
+  }
+
+  // Group full-session dates into ISO weeks
+  const weekMap = {}; // 'year-week' -> { count, monday }
+  fullDays.forEach(dateStr => {
+    const d = new Date(dateStr + 'T12:00:00');
+    const [y, w] = getISOWeek(d);
+    const key = y + '-' + String(w).padStart(2, '0');
+    if (!weekMap[key]) weekMap[key] = { count: 0, monday: getMondayOf(d) };
+    weekMap[key].count++;
+  });
+
+  // Build a continuous range of weeks from first logged week to current week (so empty weeks show as 0)
+  const sortedKeys = Object.keys(weekMap).sort();
+  const firstMonday = getMondayOf(new Date(fullDays.sort()[0] + 'T12:00:00'));
+  const thisMonday = getMondayOf(new Date());
+  const weeks = [];
+  let cur = new Date(firstMonday);
+  while (cur <= thisMonday) {
+    const [y, w] = getISOWeek(cur);
+    const key = y + '-' + String(w).padStart(2, '0');
+    weeks.push({ key, monday: new Date(cur), count: weekMap[key] ? weekMap[key].count : 0 });
+    cur.setDate(cur.getDate() + 7);
+  }
+
+  // Stats
+  const totalSessions = fullDays.length;
+  const weeksCount = weeks.length;
+  const avg = (totalSessions / weeksCount).toFixed(1);
+  const thisWeekKey = (() => { const [y,w]=getISOWeek(new Date()); return y+'-'+String(w).padStart(2,'0'); })();
+  const thisWeekCount = weekMap[thisWeekKey] ? weekMap[thisWeekKey].count : 0;
+
+  // Bar chart (most recent 12 weeks)
+  const recent = weeks.slice(-12);
+  const maxCount = Math.max(4, ...recent.map(w => w.count));
+  let bars = '';
+  recent.forEach(wk => {
+    const h = Math.round((wk.count / maxCount) * 90);
+    const label = (wk.monday.getDate()) + '/' + (wk.monday.getMonth() + 1);
+    const isThis = wk.key === thisWeekKey;
+    bars += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0">
+      <div style="font-size:11px;font-weight:700;color:${wk.count ? 'var(--accent)' : 'var(--muted)'}">${wk.count}</div>
+      <div style="width:60%;max-width:22px;height:${Math.max(h,3)}px;background:${isThis ? 'var(--accent)' : (wk.count ? 'var(--accent)' : 'var(--surface2)')};opacity:${isThis||wk.count?1:0.4};border-radius:4px 4px 0 0"></div>
+      <div style="font-size:9px;color:var(--muted);white-space:nowrap">${label}</div>
+    </div>`;
+  });
+
+  // List (most recent weeks first)
+  let rows = '';
+  weeks.slice().reverse().forEach(wk => {
+    const sunday = new Date(wk.monday); sunday.setDate(sunday.getDate() + 6);
+    const range = `${wk.monday.getDate()}/${wk.monday.getMonth()+1} – ${sunday.getDate()}/${sunday.getMonth()+1}`;
+    const isThis = wk.key === thisWeekKey;
+    const dotColor = wk.count >= 4 ? '#22c55e' : wk.count >= 2 ? '#f59e0b' : wk.count >= 1 ? '#ef4444' : 'var(--surface2)';
+    rows += `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:9px;height:9px;border-radius:50%;background:${dotColor}"></div>
+        <div style="font-size:13px;${isThis?'font-weight:700':''}">${range}${isThis?' <span style=\"color:var(--accent);font-size:11px\">(this week)</span>':''}</div>
+      </div>
+      <div style="font-size:13px;font-weight:600">${wk.count} ${wk.count===1?'day':'days'}</div>
+    </div>`;
+  });
+
+  wrap.innerHTML = `
+    <div class="chart-wrap" style="margin-bottom:14px">
+      <div class="chart-title">Gym days per week</div>
+      <div style="display:flex;gap:10px;margin:6px 0 14px">
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:var(--accent)">${thisWeekCount}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">THIS WEEK</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:800">${avg}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">AVG / WEEK</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:800">${totalSessions}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">TOTAL</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:6px">${bars}</div>
+      <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Last ${recent.length} weeks · a "gym day" = logged at least half a session</div>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:14px">
+      <div class="chart-title" style="margin-bottom:6px">Weekly breakdown</div>
+      ${rows}
+    </div>`;
 }
 
 function renderProgress() {
+  renderGymWeekly();
   const list = document.getElementById('progress-list');
   const all = [];
   for (let k in localStorage) {
@@ -9007,6 +9443,24 @@ applyTheme();
 initCoachUI();
 rescheduleAlarms();
 renderWeightProjection();
+restoreActiveTimer();
+
+// Unlock audio on the very first user interaction anywhere (iOS needs a gesture)
+function globalAudioUnlock() {
+  unlockTimerSound();
+  document.removeEventListener('touchstart', globalAudioUnlock);
+  document.removeEventListener('touchend', globalAudioUnlock);
+  document.removeEventListener('click', globalAudioUnlock);
+}
+document.addEventListener('touchstart', globalAudioUnlock, { passive: true });
+document.addEventListener('touchend', globalAudioUnlock, { passive: true });
+document.addEventListener('click', globalAudioUnlock);
+// Re-resume the audio context whenever the app returns to foreground
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && timerAudioCtx && timerAudioCtx.state === 'suspended') {
+    timerAudioCtx.resume().catch(()=>{});
+  }
+});
 </script>
 </body>
 </html>
