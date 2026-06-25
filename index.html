@@ -68,6 +68,14 @@
   .day-btn.active .day-name { color: #000; }
   .day-btn .day-type { font-size: 11px; font-weight: 500; color: var(--text); }
   .day-btn.active .day-type { color: #000; }
+  .day-btn.is-today { border-color: var(--accent); border-width: 2px; padding: 7px 13px; }
+  .day-btn.is-today.active { border-color: var(--accent); }
+  .day-btn.is-today .day-name { color: var(--accent); }
+  .day-btn.is-today.active .day-name { color: #000; }
+  .day-btn.is-rest { opacity: 0.72; }
+  .day-btn.is-rest .day-type { font-style: italic; }
+  .day-btn .day-done { font-size: 10px; font-weight: 800; color: #22c55e; line-height: 1; margin-top: 1px; }
+  .day-btn.active .day-done { color: #000; }
 
   /* EXERCISE CARD */
   .exercise-list { padding: 0 10px; display: flex; flex-direction: column; gap: 12px; }
@@ -3164,6 +3172,56 @@ const DAYS = [
       { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'Jeff Nippard hanging leg raise abs' },
       { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'Jeff Nippard cable woodchop obliques' },
     ]
+  },
+  {
+    key: 'upper', name: 'Fri', label: 'UPPER BODY', title: 'Upper Body', subtitle: 'Chest, Back, Shoulders + Arms',
+    warmup: [
+      { name: 'Light cardio', duration: '3-5 min', desc: 'Rowing machine is ideal — warms the whole upper body before pressing and pulling.', video: '' },
+      { name: 'Arm circles', duration: '30 sec each direction', desc: 'Forward and backward. Wakes up the shoulders before any pressing.', video: 'arm circles shoulder warm up exercise' },
+      { name: 'Band pull-apart', duration: '2×15 reps', desc: 'Hold a band at shoulder height, pull apart squeezing shoulder blades. Primes rear delts and upper back, protects the shoulders.', video: 'band pull apart rear delt warm up' },
+      { name: 'Push-up', duration: '1×12 reps', desc: 'Controlled, full range. Activates chest, shoulders and triceps.', video: 'push up warm up activation technique' },
+      { name: 'Dead hang', duration: '1×20-30 sec', desc: 'Hang from the bar. Decompresses the spine and opens the shoulders before pulling.', video: 'dead hang exercise benefits technique' },
+      { name: 'Light shoulder press (empty bar or light DB)', duration: '1×12 reps', desc: 'Rehearse the press pattern light before loading. Grease the groove.', video: 'shoulder press warm up technique' },
+    ],
+    cooldown: [
+      { name: 'Doorway chest stretch', duration: '2×30 sec', desc: 'Forearm on a doorframe, step through to stretch the chest. Counteracts all the pressing.', video: 'doorway chest stretch pec' },
+      { name: 'Cross-body shoulder stretch', duration: '2×30 sec each arm', desc: 'Pull one arm across your body. Stretches the rear delt and shoulder.', video: 'cross body shoulder stretch' },
+      { name: 'Lat stretch (hang or side reach)', duration: '2×30 sec each side', desc: 'Reach overhead and lean away to lengthen the lats after pulling.', video: 'lat stretch overhead side' },
+      { name: 'Triceps overhead stretch', duration: '2×30 sec each arm', desc: 'Bend one elbow behind your head, push gently with the other hand.', video: 'triceps overhead stretch' },
+    ],
+    exercises: [
+      { name: 'Incline Dumbbell Press', sets: 4, reps: '8-12', rest: '90 sec', note: 'UPPER CHEST (the aesthetic shelf). LOADED STRETCH: pause 1 sec at the bottom feeling the chest stretch. Press up and slightly together. Add weight when you hit 12 all 4 sets.', video: 'incline dumbbell press' },
+      { name: 'Lat Pulldown (wide grip)', sets: 4, reps: '10-12', rest: '90 sec', note: 'BACK WIDTH (the V-taper). Feel cue: drive elbows down and back, lead with the elbows not the hands. Full stretch at the top, squeeze at the bottom.', video: 'lat pulldown wide grip' },
+      { name: 'Seated Dumbbell Shoulder Press', sets: 4, reps: '8-12', rest: '90 sec', note: 'SHOULDER CAPS (3D delts). Press without locking out hard. Keep tension on the delts. This is a key aesthetics lift — round shoulders make the whole physique look bigger.', video: 'seated dumbbell shoulder press' },
+      { name: 'Chest-Supported Row', sets: 3, reps: '10-12', rest: '75 sec', note: 'BACK THICKNESS. Chest on the pad so there is zero momentum. Feel cue: squeeze the shoulder blades together hard at the top, hold 1 sec.', video: 'chest supported dumbbell row' },
+      { name: 'Cable Lateral Raise', sets: 4, reps: '12-15', rest: '45 sec', note: 'SIDE DELTS = SHOULDER WIDTH. The single most important exercise for an aesthetic upper body. Feel cue: lead with the elbow, lift to shoulder height, control down slow. DROP SET the last set.', video: 'cable lateral raise' },
+      { name: 'Incline Dumbbell Curl', sets: 3, reps: '10-12', rest: '60 sec', note: 'BICEP PEAK. Lie back on an incline bench, arms hanging behind the body. LOADED STRETCH: this is the most stretched bicep position there is. 3-sec eccentric. DROP SET last set.', video: 'incline dumbbell curl' },
+      { name: 'Overhead Cable Triceps Extension', sets: 3, reps: '12-15', rest: '60 sec', note: 'TRICEP LONG HEAD = ARM SIZE. Overhead position puts the long head on full stretch. Feel cue: keep elbows tight, extend fully, feel the stretch behind the arm. DROP SET last set.', video: 'overhead cable triceps extension' },
+    ]
+  },
+  {
+    key: 'posterior', name: 'Sat', label: 'GLUTES + HAMSTRINGS', title: 'Glutes & Hamstrings', subtitle: 'Posterior chain build',
+    warmup: [
+      { name: 'Light cardio', duration: '5 min', desc: 'Incline treadmill walk (8-10% grade). Pre-activates the glutes before loading.', video: '' },
+      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Drive hips up, squeeze glutes hard at the top for 1 sec. The key wake-up before hip thrusts.', video: 'Bret Contreras glute bridge activation' },
+      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around the knees, half-squat, step sideways keeping tension. Fires the glute medius (side glute = roundness).', video: 'Bret Contreras banded lateral walk glute' },
+      { name: 'Bodyweight good morning', duration: '2×12 reps', desc: 'Hands on chest, soft knees, hinge at the hips with a flat back. Grooves the hinge and warms the hamstrings.', video: 'bodyweight good morning hip hinge' },
+      { name: 'Banded clamshell', duration: '2×15 each side', desc: 'Lie on your side, band around knees, open the top knee. Targets the upper glute. Slow and controlled.', video: 'Bret Contreras clamshell glute medius' },
+    ],
+    cooldown: [
+      { name: 'Pigeon pose', duration: '2×40 sec each side', desc: 'Front shin across the mat, back leg extended, fold forward. The deep glute stretch after a posterior session.', video: 'pigeon pose glute stretch hip opener' },
+      { name: 'Standing hamstring stretch', duration: '2×30 sec each side', desc: 'Heel on a bench, hinge forward with a flat back. Lengthens the hamstrings after RDLs and curls.', video: 'standing hamstring stretch bench' },
+      { name: 'Seated figure-4 stretch', duration: '2×30 sec each side', desc: 'Cross ankle over the opposite knee, lean forward. Stretches glute and piriformis.', video: 'figure 4 glute stretch seated' },
+      { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back, arms forward. Decompresses the lower back after hip thrusts and deadlifts.', video: 'childs pose stretch yoga' },
+    ],
+    exercises: [
+      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER, second hit of the week. Pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze hard, full lockout with ribs down. PAUSE 2 sec at the top of every rep. Push close to failure.', video: 'hip thrust' },
+      { name: 'Romanian Deadlift (RDL)', sets: 4, reps: '8-10', rest: '2 min', note: 'HAMSTRING + GLUTE STRETCH. Soft knees, push hips BACK, bar close to the legs. LOADED STRETCH: lower to a deep stretch at mid-shin, pause 1 sec — this is where hamstrings grow. Squeeze glutes to stand.', video: 'romanian deadlift' },
+      { name: 'Seated Leg Curl', sets: 4, reps: '10-12', rest: '75 sec', note: 'HAMSTRING ISOLATION. Seated is best — it puts the hamstring on stretch. Feel cue: curl heels toward glutes. 3-sec eccentric. DROP SET the last set.', video: 'seated leg curl hamstrings' },
+      { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE. Rear foot on a bench, torso leaned slightly FORWARD to bias the glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. Builds the round, lifted look.', video: 'bulgarian split squat' },
+      { name: 'Hip Abduction Machine', sets: 4, reps: '15-20', rest: '60 sec', note: 'GLUTE MEDIUS = side-glute roundness and width. Lean the torso slightly forward to bias the upper glute. PAUSE 2 sec at full open, control back in. DROP SET the last set. No momentum.', video: 'hip abduction machine glutes' },
+      { name: 'Cable Pull-Through', sets: 3, reps: '15-20', rest: '60 sec', note: 'GLUTE FINISHER. Face away from the low cable, rope between the legs, hinge and drive forward squeezing the glutes. Feel cue: this is a hip hinge, not a squat. Squeeze hard at the top. Burns out the glutes to end.', video: 'cable pull through glutes' },
+    ]
   }
 ];
 
@@ -3174,7 +3232,7 @@ let videoLoaded = {};
 
 function getTodayDayIndex() {
   const d = new Date().getDay();
-  const map = { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 0, 6: 0 };
+  const map = { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 };
   return map[d] || 0;
 }
 
@@ -7497,15 +7555,31 @@ function initNavDate() {
 function initDayPicker() {
   const picker = document.getElementById('day-picker');
   picker.innerHTML = '';
+  const todayIdx = getTodayDayIndex();
+  const trained = (typeof getTrainedDates === 'function') ? getTrainedDates() : new Set();
+  // Map each day index to its actual date in the CURRENT week (Sun-start to match getDay)
+  const now = new Date();
+  const sundayThisWeek = new Date(now);
+  sundayThisWeek.setDate(now.getDate() - now.getDay()); // back to Sunday
   DAYS.forEach((day, i) => {
+    // date for this weekday in the current week
+    const dDate = new Date(sundayThisWeek);
+    dDate.setDate(sundayThisWeek.getDate() + i);
+    const dStr = dDate.toISOString().split('T')[0];
+    const isToday = i === todayIdx;
+    const didTrain = trained.has(dStr);
+    const isRest = day.key === 'active';
     const btn = document.createElement('div');
-    btn.className = 'day-btn' + (i === currentDay ? ' active' : '');
-    btn.innerHTML = `<div class="day-name">${day.name}</div><div class="day-type">${day.title}</div>`;
+    btn.className = 'day-btn' + (i === currentDay ? ' active' : '') + (isToday ? ' is-today' : '') + (isRest ? ' is-rest' : '');
+    btn.innerHTML = `
+      <div class="day-name">${day.name}${isToday ? ' •' : ''}</div>
+      <div class="day-type">${day.title}</div>
+      ${didTrain ? '<div class="day-done">✓</div>' : ''}`;
     btn.onclick = () => { currentDay = i; initDayPicker(); renderExercises(); };
     picker.appendChild(btn);
   });
   const day = DAYS[currentDay];
-  document.getElementById('day-label').textContent = currentDay === getTodayDayIndex() ? 'TODAY' : day.name;
+  document.getElementById('day-label').textContent = currentDay === todayIdx ? 'TODAY' : day.name;
   document.getElementById('day-title').textContent = day.title;
   document.getElementById('day-subtitle').textContent = day.subtitle;
 }
