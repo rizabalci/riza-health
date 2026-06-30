@@ -747,15 +747,27 @@
 
     <!-- DAILY POSTURE FIX -->
     <div style="margin:0 10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:6px">🧍 Daily Posture Fix <span style="font-size:11px;color:var(--muted);font-weight:500">(do anywhere, every day)</span></div>
-      <div style="font-size:12px;color:var(--text2);line-height:1.7">
-        Rounded shoulders are fixed by frequency, not just gym days. Do this 1-2× daily, takes 2 min:<br>
-        <strong>1.</strong> Band pull-aparts ×20 — pull a band apart at chest height, squeeze shoulder blades.<br>
-        <strong>2.</strong> Doorway chest stretch ×30 sec — forearm on frame, step through, open the chest.<br>
-        <strong>3.</strong> Wall angels ×10 — back flat to wall, slide arms up overhead keeping contact.<br>
-        <strong>4.</strong> Chin tucks ×10 — gently draw chin straight back (not down). Fixes forward head.<br>
-        <span style="color:var(--text3)">Tight chest from sitting + weak upper back = forward shoulders. This reverses it.</span>
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">🧍 Daily Posture Fix <span style="font-size:11px;color:var(--muted);font-weight:500">(do anywhere, every day)</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">Rounded shoulders are fixed by frequency, not just gym days. Do this 1-2× daily, takes 2 min:</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;font-size:12px;color:var(--text2);line-height:1.5"><strong>1. Band pull-aparts ×20</strong> — pull a band apart at chest height, squeeze shoulder blades.</div>
+          <a href="https://www.youtube.com/results?search_query=band+pull+apart+posture+how+to" target="_blank" style="font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 9px;border-radius:12px;white-space:nowrap;touch-action:manipulation">▶ How-to</a>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;font-size:12px;color:var(--text2);line-height:1.5"><strong>2. Doorway chest stretch ×30 sec</strong> — forearm on frame, step through, open the chest.</div>
+          <a href="https://www.youtube.com/results?search_query=doorway+chest+stretch+posture+how+to" target="_blank" style="font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 9px;border-radius:12px;white-space:nowrap;touch-action:manipulation">▶ How-to</a>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;font-size:12px;color:var(--text2);line-height:1.5"><strong>3. Wall angels ×10</strong> — back flat to wall, slide arms up overhead keeping contact.</div>
+          <a href="https://www.youtube.com/results?search_query=wall+angels+exercise+posture+how+to" target="_blank" style="font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 9px;border-radius:12px;white-space:nowrap;touch-action:manipulation">▶ How-to</a>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;font-size:12px;color:var(--text2);line-height:1.5"><strong>4. Chin tucks ×10</strong> — gently draw chin straight back (not down). Fixes forward head.</div>
+          <a href="https://www.youtube.com/results?search_query=chin+tucks+forward+head+posture+exercise" target="_blank" style="font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 9px;border-radius:12px;white-space:nowrap;touch-action:manipulation">▶ How-to</a>
+        </div>
       </div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:10px">Tight chest from sitting + weak upper back = forward shoulders. This reverses it.</div>
     </div>
 
     <div class="exercise-list" id="exercise-list"></div>
@@ -975,6 +987,7 @@
 
       <!-- Photo analysis section -->
       <div class="photo-section" id="photo-section" style="display:none">
+        <div style="text-align:right;margin-bottom:4px"><button onclick="changeApiKey()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline">🔑 Change API key</button></div>
         <div class="photo-section-title">Monthly Progress Photo</div>
         <div class="photo-upload-area" onclick="document.getElementById('photo-file-input').click()">
           <div class="photo-upload-icon">📸</div>
@@ -9846,11 +9859,9 @@ let pendingPhotoBase64 = null;
 let pendingPhotoType = null;
 
 function getApiKey() {
-  const hardcoded = 'AIzaSyBJMcltZ3TaV3HDeiJF2qjNXRb9AH-n8Hg';
-  if (!localStorage.getItem('gemini_api_key')) {
-    localStorage.setItem('gemini_api_key', hardcoded);
-  }
-  return localStorage.getItem('gemini_api_key') || hardcoded;
+  // No hardcoded key (it would leak in the public repo and get disabled by Google).
+  // The key lives only in this device's localStorage, pasted by you in the Coach setup.
+  return localStorage.getItem('gemini_api_key') || '';
 }
 
 function saveApiKey() {
@@ -9866,19 +9877,34 @@ function saveApiKey() {
   setTimeout(() => initCoachUI(), 800);
 }
 
+function changeApiKey() {
+  localStorage.removeItem('gemini_api_key');
+  initCoachUI();
+}
+
 function initCoachUI() {
   const key = getApiKey();
   const setup = document.getElementById('coach-setup-panel');
   const inputRow = document.getElementById('coach-input-row');
   const photoSection = document.getElementById('photo-section');
-  const keyInput = document.getElementById('api-key-input');
-  if (keyInput && key) keyInput.value = key;
   if (!key) {
+    setup.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin:10px 12px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px">🔑 Connect your AI Coach</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Paste your free Google Gemini API key below. It is stored only on this phone and never uploaded anywhere, so it stays private and won't get disabled.</div>
+        <input id="api-key-input" class="api-key-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key (starts with AIza...)" style="width:100%;box-sizing:border-box;margin-bottom:10px">
+        <button onclick="saveApiKey()" style="width:100%;padding:13px;background:var(--accent);color:#000;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;min-height:48px">Save & connect</button>
+        <div id="api-key-status" class="api-key-status"></div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:12px">
+          Get a free key: open <strong>aistudio.google.com</strong> → sign in → "Get API key" → "Create API key" → copy and paste it here. Takes about a minute.
+        </div>
+      </div>`;
     setup.style.display = 'block';
     inputRow.style.display = 'none';
     photoSection.style.display = 'none';
   } else {
     setup.style.display = 'none';
+    setup.innerHTML = '';
     inputRow.style.display = 'flex';
     photoSection.style.display = 'block';
   }
