@@ -4928,9 +4928,9 @@ Format with bold headers for key points. Always relate the answer to his specifi
 Current program uses: progressive overload, RPE 7-9, loaded stretch pauses, drop sets, rest-pause, supersets, alternating heavy/volume weeks. Daily targets: 2500 kcal, 190-200g protein.`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemContext }] },
         contents: [{ role: 'user', parts: [{ text: question }] }],
@@ -7456,8 +7456,8 @@ async function askCoachMacros() {
   showToast('Looking up macros...');
   const prompt = `Give me the macros for: "${food}". Reply ONLY with JSON: {"kcal":number,"protein":number,"carbs":number,"fat":number}. No explanation, just JSON.`;
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 100, temperature: 0.1 } })
     });
     const data = await res.json();
@@ -9294,9 +9294,9 @@ Respond ONLY with a valid JSON array, no markdown, no explanation:
 ]`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: { maxOutputTokens: 2000, temperature: 0.8 }
@@ -9724,9 +9724,9 @@ Respond ONLY with a JSON object, no markdown, no explanation outside the JSON:
 }`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: { maxOutputTokens: 600, temperature: 0.3 }
@@ -9866,8 +9866,8 @@ function getApiKey() {
 
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key.startsWith('AIza')) {
-    document.getElementById('api-key-status').textContent = 'Key must start with AIza...';
+  if (key.length < 20) {
+    document.getElementById('api-key-status').textContent = 'That key looks too short. Paste the full key.';
     document.getElementById('api-key-status').className = 'api-key-status err';
     return;
   }
@@ -9892,7 +9892,7 @@ function initCoachUI() {
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin:10px 12px">
         <div style="font-size:16px;font-weight:700;margin-bottom:6px">🔑 Connect your AI Coach</div>
         <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Paste your free Google Gemini API key below. It is stored only on this phone and never uploaded anywhere, so it stays private and won't get disabled.</div>
-        <input id="api-key-input" class="api-key-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key (starts with AIza...)" style="width:100%;box-sizing:border-box;margin-bottom:10px">
+        <input id="api-key-input" class="api-key-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your API key here" style="width:100%;box-sizing:border-box;margin-bottom:10px">
         <button onclick="saveApiKey()" style="width:100%;padding:13px;background:var(--accent);color:#000;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;min-height:48px">Save & connect</button>
         <div id="api-key-status" class="api-key-status"></div>
         <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:12px">
@@ -10036,9 +10036,9 @@ async function sendCoachMessage(overrideText, photoBase64, photoType) {
         : [{ text: m.content }]
     }));
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: COACH_SYSTEM }] },
         contents,
