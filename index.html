@@ -338,6 +338,13 @@
   .warmup-body { display: none; border-top: 1px solid var(--border); padding: 10px 14px 14px; }
   .warmup-section.open .warmup-body { display: block; }
   .warmup-item { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .prep-item { display: flex; gap: 11px; padding: 11px 10px; margin-bottom: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; touch-action: manipulation; align-items: flex-start; }
+  .prep-item.prep-checked { opacity: 0.55; border-color: #22c55e; }
+  .prep-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 800; color: #fff; margin-top: 1px; }
+  .prep-item.prep-checked .prep-check { background: #22c55e; border-color: #22c55e !important; }
+  .prep-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .prep-item.prep-checked .prep-name { text-decoration: line-through; }
+  .prep-desc { font-size: 12px; color: var(--text2); line-height: 1.45; margin-top: 4px; }
   .warmup-item:last-child { border-bottom: none; }
   .warmup-item-num { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #000; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
   .warmup-item-body { flex: 1; }
@@ -6781,10 +6788,14 @@ function renderSuppToday() {
   const dayBtns = [
     { k: 'normal', label: 'Normal' },
     { k: 'gym', label: '💥 Gym' },
-    { k: 'work', label: '🧠 Work' },
     { k: 'sick', label: '🤒 Sick' },
   ];
-  let html = `<div style="display:flex;gap:5px;margin-bottom:14px">
+  const auto = isDayTypeAuto();
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div style="font-size:11px;color:var(--text3)">${auto ? `✨ Auto-set to <strong style="color:var(--accent)">${type === 'gym' ? 'Gym day' : 'Normal'}</strong> from your program` : 'Manually set'}</div>
+    ${auto ? '' : `<button onclick="resetDayTypeAuto()" style="font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Back to auto</button>`}
+  </div>
+  <div style="display:flex;gap:5px;margin-bottom:14px">
     ${dayBtns.map(b => `<button onclick="setDayType('${b.k}')" style="flex:1;padding:7px 4px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${type === b.k ? 'var(--accent)' : 'var(--border2)'};background:${type === b.k ? 'var(--accent)' : 'var(--surface2)'};color:${type === b.k ? '#000' : 'var(--text3)'}">${b.label}</button>`).join('')}
   </div>`;
 
@@ -6844,7 +6855,26 @@ function toggleSuppCheck(idx) {
 function getDayType() {
   const today = getTodayKey();
   const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
-  return map[today] || 'normal';
+  // If the user manually picked a type today, respect it.
+  if (map[today]) return map[today];
+  // Otherwise auto-detect from the weekly program: training day → 'gym', rest day → 'normal'.
+  try {
+    const todayDay = DAYS[getTodayDayIndex()];
+    if (todayDay && todayDay.key !== 'active') return 'gym';
+  } catch(e) {}
+  return 'normal';
+}
+function isDayTypeAuto() {
+  const today = getTodayKey();
+  const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
+  return !map[today];
+}
+function resetDayTypeAuto() {
+  const today = getTodayKey();
+  const map = JSON.parse(localStorage.getItem('supp_daytype') || '{}');
+  delete map[today];
+  localStorage.setItem('supp_daytype', JSON.stringify(map));
+  refreshAllSuppViews();
 }
 function setDayType(type) {
   const today = getTodayKey();
@@ -6948,7 +6978,6 @@ function renderHomeSuppCard() {
   const dayBtns = [
     { k: 'normal', label: 'Normal' },
     { k: 'gym', label: '💥 Gym' },
-    { k: 'work', label: '🧠 Work' },
     { k: 'sick', label: '🤒 Sick' },
   ];
 
@@ -6966,6 +6995,10 @@ function renderHomeSuppCard() {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:14px;font-weight:700;color:var(--text)">💊 Today's Supplements</div>
         <div style="font-size:12px;color:var(--text3)">${doneCount}/${items.length} done</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <div style="font-size:10px;color:var(--text3)">${isDayTypeAuto() ? `✨ Auto: <strong style="color:var(--accent)">${type === 'gym' ? 'Gym day' : 'Normal'}</strong>` : 'Manual'}</div>
+        ${isDayTypeAuto() ? '' : `<button onclick="resetDayTypeAuto()" style="font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Back to auto</button>`}
       </div>
       <div style="display:flex;gap:5px;margin-bottom:12px">
         ${dayBtns.map(b => `<button onclick="setDayType('${b.k}')" style="flex:1;padding:6px 4px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${type === b.k ? 'var(--accent)' : 'var(--border2)'};background:${type === b.k ? 'var(--accent)' : 'var(--surface2)'};color:${type === b.k ? '#000' : 'var(--text3)'}">${b.label}</button>`).join('')}
@@ -7823,6 +7856,45 @@ function getBestEver(dayKey, exIdx, beforeToday) {
   return best;
 }
 
+// Parse a duration/time string into seconds for the timer (e.g. "45 sec", "2×30 sec", "60 sec each")
+function parseTimeToSec(str) {
+  if (!str) return 0;
+  const s = str.toLowerCase();
+  const minM = s.match(/(\d+)\s*min/);
+  if (minM) return parseInt(minM[1]) * 60;
+  const secM = s.match(/(\d+)\s*sec/);
+  if (secM) return parseInt(secM[1]);
+  return 0;
+}
+// Per-day prep check state (warm-up + cooldown), resets daily
+function getPrepKey() { return 'prep_done_' + new Date().toISOString().split('T')[0]; }
+function getPrepDone() { try { return JSON.parse(localStorage.getItem(getPrepKey()) || '{}'); } catch(e) { return {}; } }
+function togglePrepDone(id) {
+  const d = getPrepDone();
+  d[id] = !d[id];
+  localStorage.setItem(getPrepKey(), JSON.stringify(d));
+  const el = document.getElementById('prep-' + id);
+  if (el) el.classList.toggle('prep-checked', d[id]);
+}
+
+function renderPrepItem(w, id, accent) {
+  const secs = parseTimeToSec(w.duration);
+  const done = getPrepDone()[id];
+  const timerBtn = secs > 0 ? `<button onclick="event.stopPropagation();startTimer(${secs},'${(w.name||'').replace(/'/g,'')}')" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:${accent};background:var(--surface2);border:1px solid ${accent};border-radius:12px;padding:4px 10px;cursor:pointer;touch-action:manipulation;margin-top:6px;margin-right:6px">⏱ ${secs}s</button>` : '';
+  const vidBtn = w.video ? `<a href="${videoUrl(w.video)}" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 10px;border-radius:12px;touch-action:manipulation">▶ How-to</a>` : '';
+  return `<div class="prep-item${done ? ' prep-checked' : ''}" id="prep-${id}" onclick="togglePrepDone('${id}')">
+    <div class="prep-check" style="border-color:${accent}">${done ? '✓' : ''}</div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="prep-name">${w.name}</div>
+        <div style="font-size:11px;font-weight:700;color:${accent};white-space:nowrap">${w.duration}</div>
+      </div>
+      <div class="prep-desc">${w.desc}</div>
+      <div>${timerBtn}${vidBtn}</div>
+    </div>
+  </div>`;
+}
+
 function renderWarmup() {
   const day = DAYS[currentDay];
   const section = document.getElementById('warmup-section');
@@ -7834,21 +7906,12 @@ function renderWarmup() {
         <div class="warmup-header-left">
           <span class="warmup-icon">🔥</span>
           <span class="warmup-title">Warm-up</span>
-          <span class="warmup-badge">${day.warmup.length} exercises · ~8 min · bodyweight</span>
+          <span class="warmup-badge">${day.warmup.length} moves · tap to check</span>
         </div>
         <span class="warmup-chevron">▾</span>
       </div>
       <div class="warmup-body">
-        ${day.warmup.map((w, i) => `
-          <div class="warmup-item">
-            <div class="warmup-item-num">${i + 1}</div>
-            <div class="warmup-item-body">
-              <div class="warmup-item-name">${w.name}</div>
-              <div class="warmup-item-duration">${w.duration}</div>
-              <div class="warmup-item-desc">${w.desc}</div>
-              ${w.video ? `<a href="${videoUrl(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
-            </div>
-          </div>`).join('')}
+        ${day.warmup.map((w, i) => renderPrepItem(w, 'wu-' + day.key + '-' + i, 'var(--accent)')).join('')}
       </div>
     </div>`;
 }
@@ -7869,22 +7932,13 @@ function renderCooldown() {
         <div class="warmup-header-left">
           <span class="warmup-icon">🧘</span>
           <span class="warmup-title">Cool-down</span>
-          <span class="warmup-badge">${day.cooldown.length} stretches · ~8 min</span>
+          <span class="warmup-badge">${day.cooldown.length} stretches · tap to check</span>
         </div>
         <span class="warmup-chevron">▾</span>
       </div>
       <div class="warmup-body">
-        ${day.cooldown.map((w, i) => `
-          <div class="warmup-item">
-            <div class="warmup-item-num" style="background:var(--blue)">${i + 1}</div>
-            <div class="warmup-item-body">
-              <div class="warmup-item-name">${w.name}</div>
-              <div class="warmup-item-duration" style="color:var(--blue)">${w.duration}</div>
-              <div class="warmup-item-desc">${w.desc}</div>
-              ${w.video ? `<a href="${videoUrl(w.video)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:3px 8px;border-radius:12px;touch-action:manipulation">▶ Watch on YouTube</a>` : ''}
-            </div>
-          </div>`).join('')}
-        <div style="padding:10px 0 4px;font-size:12px;color:var(--text3);line-height:1.5">Stretching post-workout reduces injury risk, improves flexibility, and helps clear lactate from muscles. Hold each stretch without bouncing.</div>
+        ${day.cooldown.map((w, i) => renderPrepItem(w, 'cd-' + day.key + '-' + i, 'var(--blue)')).join('')}
+        <div style="padding:10px 2px 4px;font-size:11px;color:var(--text3);line-height:1.5">Hold each stretch, breathe, don't bounce. Tap ⏱ to time it.</div>
       </div>
     </div>`;
 }
