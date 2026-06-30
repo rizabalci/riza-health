@@ -735,6 +735,19 @@
     <!-- DAILY SUPPLEMENT SUMMARY -->
     <div id="home-supp-card" style="margin:0 10px 12px"></div>
 
+    <!-- DAILY POSTURE FIX -->
+    <div style="margin:0 10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px">🧍 Daily Posture Fix <span style="font-size:11px;color:var(--muted);font-weight:500">(do anywhere, every day)</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">
+        Rounded shoulders are fixed by frequency, not just gym days. Do this 1-2× daily, takes 2 min:<br>
+        <strong>1.</strong> Band pull-aparts ×20 — pull a band apart at chest height, squeeze shoulder blades.<br>
+        <strong>2.</strong> Doorway chest stretch ×30 sec — forearm on frame, step through, open the chest.<br>
+        <strong>3.</strong> Wall angels ×10 — back flat to wall, slide arms up overhead keeping contact.<br>
+        <strong>4.</strong> Chin tucks ×10 — gently draw chin straight back (not down). Fixes forward head.<br>
+        <span style="color:var(--text3)">Tight chest from sitting + weak upper back = forward shoulders. This reverses it.</span>
+      </div>
+    </div>
+
     <div class="exercise-list" id="exercise-list"></div>
 
     <!-- COOLDOWN SECTION -->
@@ -749,6 +762,13 @@
   <div id="finish-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px">
     <div style="background:var(--surface);border-radius:16px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;border:1px solid var(--border)">
       <div id="finish-content" style="padding:22px"></div>
+    </div>
+  </div>
+
+  <!-- SWAP EXERCISE MODAL -->
+  <div id="swap-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeSwap()">
+    <div style="background:var(--surface);border-radius:16px 16px 0 0;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;border-top:1px solid var(--border)">
+      <div id="swap-content" style="padding:20px 18px 32px"></div>
     </div>
   </div>
   <div class="screen" id="screen-progress">
@@ -2956,6 +2976,28 @@
   </div>
 </div>
 
+<!-- MOBILITY & FLEXIBILITY SCREEN -->
+<div class="screen" id="screen-mobility">
+  <div style="padding:0 0 120px">
+    <div style="padding:20px 16px 12px">
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.3px">🤸 Mobility & Flexibility</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;line-height:1.5">Do this anytime, as often as you like. Goal: touch your toes, open hips and shoulders. Best done warm (after a workout or a hot shower). Never bounce, ease into each stretch and breathe.</div>
+    </div>
+    <div id="mobility-content" style="padding:0 16px"></div>
+  </div>
+</div>
+
+<!-- CALISTHENICS SCREEN -->
+<div class="screen" id="screen-calisthenics">
+  <div style="padding:0 0 120px">
+    <div style="padding:20px 16px 12px">
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.3px">🤾 Calisthenics</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;line-height:1.5">Bodyweight strength + skills, Heria style. Zero equipment needed (a pull-up bar helps). Beginner-friendly progressions, work the easier version until it is solid, then level up. Great for travel, busy gym, or a home day.</div>
+    </div>
+    <div id="calisthenics-content" style="padding:0 16px"></div>
+  </div>
+</div>
+
 <!-- EATING OUT SCREEN -->
 
 <div class="screen" id="screen-eatout">
@@ -3017,6 +3059,8 @@
     <div onclick="switchTabAndClose('massage')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>💆</span><span style="font-size:13px;font-weight:500">Massage Guide</span></div>
     <div onclick="switchTabAndClose('homeworkout')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🏠</span><span style="font-size:13px;font-weight:500">Home Workout</span></div>
     <div onclick="switchTabAndClose('meditation')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🧘</span><span style="font-size:13px;font-weight:500">Meditation</span></div>
+    <div onclick="switchTabAndClose('mobility')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🤸</span><span style="font-size:13px;font-weight:500">Mobility & Flexibility</span></div>
+    <div onclick="switchTabAndClose('calisthenics')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🤾</span><span style="font-size:13px;font-weight:500">Calisthenics</span></div>
     <div onclick="switchTabAndClose('projection')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>📉</span><span style="font-size:13px;font-weight:500">Weight Projection</span></div>
     <div onclick="switchTabAndClose('shopping')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🛒</span><span style="font-size:13px;font-weight:500">Shopping List</span></div>
     <div onclick="switchTabAndClose('sauna')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🧖</span><span style="font-size:13px;font-weight:500">Sauna</span></div>
@@ -3061,12 +3105,9 @@ const DAYS = [
   {
     key: 'push', name: 'Sun', label: 'PUSH DAY', title: 'Push', subtitle: 'Chest, Shoulders, Triceps + Core',
     warmup: [
-      { name: 'Light cardio', duration: '3-5 min', desc: 'Treadmill walk at 5-6 km/h or rowing machine. Gets blood flowing.', video: '' },
-      { name: 'Arm circles', duration: '30 sec each direction', desc: 'Forward and backward. Full range. Loosens shoulder joint.', video: 'arm circles shoulder warm up exercise' },
-      { name: 'Band pull-aparts (or straight arm back squeeze)', duration: '2×15 reps', desc: 'Hold arms out front, pull apart to T-position. Activates rear delts and rotator cuff.', video: 'band pull apart shoulder warm up exercise' },
-      { name: 'Wall slides', duration: '2×10 reps', desc: 'Back flat against wall, arms at 90 degrees, slide up overhead. Shoulder mobility.', video: 'wall slides shoulder mobility exercise' },
-      { name: 'Push-up (slow)', duration: '2×10 reps', desc: '3 seconds down, pause at bottom, push up. Activates chest and triceps before loading.', video: 'slow push up warm up chest activation' },
-      { name: 'Shoulder tap plank', duration: '1×20 reps', desc: 'Plank position, tap opposite shoulder alternating. Core activation.', video: 'shoulder tap plank core warm up exercise' },
+      { name: 'Light cardio', duration: '3-5 min', desc: 'Treadmill walk, bike, or rowing machine. Raise body temp and get blood flowing.', video: '' },
+      { name: 'Band pull-aparts (POSTURE)', duration: '2×20 reps', desc: 'Hold a band at shoulder height, pull apart squeezing shoulder blades together. Do these to set your shoulders BACK and DOWN before pressing — counteracts the forward-round. Worth doing even when nothing else.', video: 'band pull apart posture rear delt' },
+      { name: 'Quick shoulder prep', duration: '~1 min', desc: 'Optional: 10 arm circles each way + a few wall slides. Then ramp-up sets on your first press (see below).', video: 'wall slides shoulder mobility' },
     ],
     cooldown: [
       { name: 'Chest doorway stretch', duration: '2×30 sec', desc: 'Place forearm on door frame, rotate torso away. Stretches pec major. Do both sides.', video: 'chest doorway stretch pec stretch' },
@@ -3075,7 +3116,7 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back on heels, arms extended forward on floor. Decompresses lower back.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: 'STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'barbell bench press' },
+      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', rest: '2-3 min', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: push yourself away from the bar, not bar away from you. LAST SET: rest-pause — hit failure, rest 15 sec, squeeze 2-3 more. Add 2.5kg when you hit top of range all 4 sets.', video: 'barbell bench press' },
       { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'incline dumbbell press technique upper chest' },
       { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'cable chest fly' },
       { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'seated overhead press' },
@@ -3088,12 +3129,8 @@ const DAYS = [
   {
     key: 'pull', name: 'Mon', label: 'PULL DAY', title: 'Pull', subtitle: 'Back, Biceps + Core',
     warmup: [
-      { name: 'Light cardio', duration: '3-5 min', desc: 'Treadmill or row. Gets heart rate up and blood into muscles.', video: '' },
-      { name: 'Cat-cow stretch', duration: '1×10 reps', desc: 'On all fours, arch and round spine slowly. Mobilises thoracic spine for rows and deadlifts.', video: 'cat cow stretch spine mobility exercise' },
-      { name: 'Hip hinge (bodyweight)', duration: '2×10 reps', desc: 'Stand, hinge forward at hips with flat back, feel hamstring stretch. Teaches the deadlift pattern.', video: 'bodyweight hip hinge deadlift warm up' },
-      { name: 'Dead hang', duration: '2×20-30 sec', desc: 'Hang from pull-up bar, fully relaxed. Decompresses spine and opens shoulder joint.', video: 'dead hang exercise benefits technique' },
-      { name: 'Scapular pull-up', duration: '2×8 reps', desc: 'Hang from bar, without bending elbows pull shoulder blades down and together. Activates lats.', video: 'scapular pull up exercise technique lats' },
-      { name: 'Bodyweight Good Morning', duration: '2×10 reps', desc: 'Hands behind head, hinge forward keeping back flat. Warms up hamstrings and lower back.', video: 'bodyweight good morning exercise hamstring warm up' },
+      { name: 'Light cardio', duration: '3-5 min', desc: 'Rowing machine is ideal for pull day. Raise body temp and get blood flowing.', video: '' },
+      { name: 'Quick back prep', duration: '~1 min', desc: 'Optional: 20-30 sec dead hang + a few scapular pull-ups to switch on the lats. Then warm up with ramp-up sets on your first lift (see below).', video: 'scapular pull up warm up' },
     ],
     cooldown: [
       { name: 'Lat stretch (arm overhead, lean)', duration: '2×30 sec each side', desc: 'Hold something sturdy, extend one arm overhead and lean sideways. Full lat stretch.', video: 'lat stretch overhead arm' },
@@ -3102,25 +3139,23 @@ const DAYS = [
       { name: 'Thoracic rotation', duration: '1×10 each side', desc: 'Sit cross-legged, rotate torso fully each side. Unlocks thoracic spine after heavy rows.', video: 'thoracic rotation stretch' },
     ],
     exercises: [
-      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: 'STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'conventional deadlift' },
+      { name: 'Deadlift (conventional)', sets: 4, reps: '4-5', rest: '3 min', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | STRENGTH. Warm-up: 50%×5, 70%×3, then work sets. Feel cue: push the floor away, not pull the bar up. LAST SET: rest-pause. Add 5kg when you hit top of range all 4 sets.', video: 'conventional deadlift' },
       { name: 'Pull-up (weighted if possible)', sets: 4, reps: '6-8', rest: '2 min', note: 'STRENGTH/HYPERTROPHY. Feel cue: pull elbows to back pockets, not chin to bar. LOADED STRETCH: dead hang at bottom 1 sec — lats maximally loaded here. Add weight belt when bodyweight is easy.', video: 'pull up' },
       { name: 'Chest-Supported DB Row', sets: 3, reps: '10-12', rest: '90 sec', note: 'HORIZONTAL PULL. Feel cue: lead with elbow, not hand. LOADED STRETCH: full arm extension at bottom, pause 1 sec. Squeeze at top 1 sec. No lower back involvement.', video: 'chest supported dumbbell row' },
       { name: 'Seated Cable Row (wide grip)', sets: 3, reps: '10-12', rest: '90 sec', note: 'UPPER BACK. Feel cue: retract shoulder blades first, then pull elbows back. Hold 1 sec at peak. DROP SET last set: reduce weight 30% continue to failure.', video: 'seated cable row' },
-      { name: 'Face Pull (rope)', sets: 3, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF. Feel cue: pull rope apart as you bring to face — external rotation of shoulders. Light weight, high reps. Non-negotiable at 39.', video: 'Jeff Nippard face pull rear delt' },
+      { name: 'Face Pull (rope)', sets: 4, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF + POSTURE FIX. The #1 move for pulling rounded shoulders back. Feel cue: pull rope apart as you bring to face, externally rotate so knuckles end up beside your ears, SQUEEZE the rear delts and hold 1 sec. Light weight, high reps. Do these every chance you get — they directly fix the slump.', video: 'Jeff Nippard face pull rear delt' },
+      { name: 'Reverse Pec Deck (rear delt)', sets: 4, reps: '15-20', rest: '45 sec', note: 'REAR DELTS = POSTURE + WIDTH. Weak rear delts let the shoulders round forward. Feel cue: lead with the elbows, squeeze the shoulder blades, pause 1 sec at the back. Light weight, high reps, no momentum. This is a key posture-fixer.', video: 'reverse pec deck rear delt' },
+      { name: 'Dumbbell Lateral Raise', sets: 3, reps: '15-20', rest: '45 sec', note: 'SIDE DELTS = WIDTH (3rd hit of the week — side delts grow on frequency). LIGHT dumbbells, no swing. Feel cue: lead with the elbow, lift to shoulder height only, lower slow. If you can swing it up, it is too heavy.', video: 'dumbbell lateral raise' },
       { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'dumbbell bicep curl' },
-      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt before raising legs — activates abs not hip flexors. Slow and controlled.', video: 'Jeff Nippard hanging leg raise abs' },
+      { name: 'Lying Leg Raise (floor)', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Lie on your back, hands under your glutes for support. Feel cue: press your lower back into the floor (posterior pelvic tilt) BEFORE lifting — this is what works the abs instead of the hip flexors. Lift legs to vertical, lower SLOW (3 sec), stop before your heels touch the floor to keep tension. Bend knees slightly if straight legs are too hard. Progress to a hanging bar later once this is easy.', video: 'lying leg raise floor abs technique' },
       { name: 'Incline Bike (cardio finisher)', sets: 0, reps: '15 min', rest: '', note: 'POST-WORKOUT CARDIO. 15 min on the bike with incline/resistance up. Keep it Zone 2 — steady pace where you could still hold a conversation, breathing harder but not gasping. Fat-burning finisher while glycogen is already low from lifting. Optional on heavy-fatigue days.', video: 'incline bike cardio zone 2' },
     ]
   },
   {
     key: 'lower', name: 'Tue', label: 'LEG + GLUTE DAY', title: 'Legs & Glutes', subtitle: 'Glute build + Quads + Hamstrings',
     warmup: [
-      { name: 'Light cardio', duration: '5 min', desc: 'Treadmill incline walk (8-10% grade, 5 km/h) or stair climber. Incline walking pre-activates the glutes and warms the hips.', video: '' },
-      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Lie on back, knees bent, drive hips up squeezing glutes hard at top for 1 sec. Most important warm-up before hip thrusts.', video: 'Bret Contreras glute bridge activation' },
-      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around knees, half-squat, step sideways keeping tension. Fires up glute medius (the side glute that gives roundness).', video: 'Bret Contreras banded lateral walk glute' },
-      { name: 'Bodyweight squat', duration: '2×15 reps', desc: 'Slow and deep. Heels on floor, knees track toes. Rehearses the squat pattern and opens the hips.', video: 'bodyweight squat warm up technique' },
-      { name: 'Bodyweight hip hinge', duration: '2×10 reps', desc: 'Hinge at hips with flat back, feel hamstring stretch, drive hips forward. Grooves the hip thrust and RDL pattern.', video: 'Bret Contreras hip hinge pattern' },
-      { name: 'Ankle circles', duration: '30 sec each ankle', desc: 'Full range circles both directions. Critical for squat depth.', video: 'ankle circles mobility squat warm up' },
+      { name: 'Light cardio', duration: '5 min', desc: 'Incline treadmill walk pre-activates the glutes. Raise body temp.', video: '' },
+      { name: 'Quick glute prep', duration: '~2 min', desc: 'Optional but useful: 15 bodyweight glute bridges + 12 banded lateral walks each way to switch on the glutes. Then ramp up on your first big lift (see below).', video: 'Bret Contreras glute bridge activation' },
     ],
     cooldown: [
       { name: 'Pigeon pose (hip flexor + glute)', duration: '2×45 sec each side', desc: 'One leg bent in front, other extended behind, fold forward. Deep hip and glute stretch. Essential after hip thrusts and squats.', video: 'pigeon pose hip flexor glute stretch' },
@@ -3129,7 +3164,7 @@ const DAYS = [
       { name: 'Standing hamstring stretch', duration: '2×30 sec each side', desc: 'Heel on a bench, hinge forward keeping back flat. Lengthens hamstrings after RDLs.', video: 'standing hamstring stretch bench' },
     ],
     exercises: [
-      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER. Back pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep. Add weight when you hit 10 reps all 4 sets.', video: 'hip thrust' },
+      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | THE #1 GLUTE BUILDER. Back pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze glutes hard, full lockout with ribs down — do not arch the lower back. PAUSE 2 sec at the top of every rep. Add weight when you hit 10 reps all 4 sets.', video: 'hip thrust' },
       { name: 'Barbell Squat', sets: 3, reps: '6-8', rest: '3 min', note: 'QUADS + GLUTES + STRENGTH. Warm-up: 50%×8, 70%×5, then work sets. Feel cue: spread the floor with your feet — creates knee stability and glute activation. Hit at least parallel depth. Add 2.5kg when you hit 8 reps all 3 sets.', video: 'barbell squat' },
       { name: 'Romanian Deadlift (RDL)', sets: 3, reps: '8-10', rest: '2 min', note: 'GLUTE + HAMSTRING STRETCH. Soft knees, push hips BACK (not down), bar close to legs. LOADED STRETCH: lower until you feel a deep hamstring/glute stretch (mid-shin), pause 1 sec there — this is where the growth happens. Squeeze glutes to stand.', video: 'Jeff Nippard romanian deadlift RDL technique' },
       { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE + QUAD. Rear foot on bench, torso leaned slightly FORWARD to bias glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. LOADED STRETCH: pause 1 sec at the deep bottom. Fixes left-right imbalances.', video: 'bulgarian split squat' },
@@ -3144,35 +3179,31 @@ const DAYS = [
     warmup: [],
     cooldown: [],
     exercises: [
-      { name: 'Tennis (with coach)', sets: 1, reps: '60-90 min', rest: '-', note: 'Priority activity when scheduled. Excellent cardio, coordination, and reaction training. Add +150-200 kcal on tennis days.', video: 'tennis beginner drills technique coach' },
-      { name: 'Swimming (Stadt Wien pools)', sets: 1, reps: '30-45 min', rest: '-', note: 'When no tennis. Amalienbad or Stadthallenbad. Easy freestyle, heart rate below 130. Recovery not training.', video: 'swimming for recovery technique' },
-      { name: 'Walk (Donaukanal / 1st district)', sets: 1, reps: '45-60 min', rest: '-', note: 'Always valid. Schwedenplatz to Donaukanal loop. 8-10k steps target.', video: '' },
-      { name: 'Sauna (Stadt Wien Bäder)', sets: 1, reps: '3 rounds × 12 min', rest: '-', note: 'Post-swim. Finnish + cold shower between rounds. See Sauna screen for full protocol.', video: '' },
-      { name: 'Mobility and Stretching', sets: 1, reps: '20-25 min', rest: '-', note: 'Focus on whatever is sore from Mon/Tue. Hip flexors, hamstrings, thoracic spine, shoulders.', video: 'full body mobility stretching routine' },
+      { name: 'Tennis (with coach)', sets: 0, reps: '60-90 min', rest: '-', note: 'Priority activity when scheduled. Excellent cardio, coordination, and reaction training. Add +150-200 kcal on tennis days.', video: 'tennis beginner drills technique coach' },
+      { name: 'Swimming (Stadt Wien pools)', sets: 0, reps: '30-45 min', rest: '-', note: 'When no tennis. Amalienbad or Stadthallenbad. Easy freestyle, heart rate below 130. Recovery not training.', video: 'swimming for recovery technique' },
+      { name: 'Walk (Donaukanal / 1st district)', sets: 0, reps: '45-60 min', rest: '-', note: 'Always valid. Schwedenplatz to Donaukanal loop. 8-10k steps target.', video: '' },
+      { name: 'Sauna (Stadt Wien Bäder)', sets: 0, reps: '3 rounds × 12 min', rest: '-', note: 'Post-swim. Finnish + cold shower between rounds. See Sauna screen for full protocol.', video: '' },
+      { name: 'Mobility and Stretching', sets: 0, reps: '20-25 min', rest: '-', note: 'Focus on whatever is sore from Mon/Tue. Hip flexors, hamstrings, thoracic spine, shoulders.', video: 'full body mobility stretching routine' },
     ]
   },
   {
     key: 'hybrid', name: 'Thu', label: 'HYBRID + ABS', title: 'Hybrid + Ab Focus', subtitle: 'Full Body Maintenance + Core',
     warmup: [
-      { name: 'Light cardio', duration: '3-5 min', desc: 'Treadmill or bike. Full body session needs full body warm-up.', video: '' },
-      { name: 'Arm circles', duration: '30 sec each direction', desc: 'Forward and backward. Shoulder prep for pressing and pulling.', video: 'arm circles shoulder warm up exercise' },
-      { name: 'Bodyweight squat', duration: '1×10 reps', desc: 'Slow. Lower body activation even though this is not a leg day.', video: 'bodyweight squat warm up technique' },
-      { name: 'Push-up', duration: '1×10 reps', desc: 'Standard push-up, controlled. Activates chest and triceps.', video: 'push up warm up activation technique' },
-      { name: 'Dead hang', duration: '1×20-30 sec', desc: 'Bar hang. Decompresses spine, opens shoulders before pulling work.', video: 'dead hang exercise benefits technique' },
-      { name: 'Hollow body hold', duration: '2×20 sec', desc: 'Lie on back, arms overhead, lower back pressed to floor, lift legs and shoulders slightly. Core activation.', video: 'hollow body hold core activation exercise' },
+      { name: 'Light cardio', duration: '3-5 min', desc: 'Any machine. Raise body temp and get blood flowing.', video: '' },
+      { name: 'Quick full-body prep', duration: '~1 min', desc: 'Optional: 10 bodyweight squats + 10 arm circles + a short dead hang. Then ramp up on your first lift (see below).', video: '' },
     ],
     cooldown: [
       { name: 'Full body stretch circuit', duration: '10 min total', desc: 'Chest, lats, hip flexors, hamstrings, shoulders. 30 seconds each. After hybrid day you need everything.', video: 'full body cool down stretching routine' },
       { name: 'Foam roll (if available)', duration: '5 min', desc: 'Roll quads, IT band, upper back. John Reed may have foam rollers in the stretching area.', video: 'foam rolling upper back quads technique' },
     ],
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'incline dumbbell press technique upper chest' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | CHEST MAINTENANCE. LOADED STRETCH: pause 1 sec at bottom. Same weight as Sunday. If weight drops, you need more sleep or food.', video: 'incline dumbbell press technique upper chest' },
       { name: 'Pull-up or Lat Pulldown', sets: 4, reps: '8-10', rest: '90 sec', note: 'BACK MAINTENANCE. Feel cue: dead hang at bottom (LOADED STRETCH), drive elbows to back pockets. Full range every rep.', video: 'pull up' },
       { name: 'Arnold Press (dumbbell)', sets: 3, reps: '10-12', rest: '60 sec', note: 'SHOULDER. Feel cue: rotate palms as you press — starts facing you, ends facing forward. Hits all 3 shoulder heads. Control the rotation both ways.', video: 'Jeff Nippard arnold press' },
       { name: 'Dip (parallel bars)', sets: 3, reps: '8-12', rest: '90 sec', note: 'TRICEP + CHEST. LOADED STRETCH: 3-sec descent to max stretch. LAST SET: rest-pause after failure.', video: 'parallel bar dips' },
       { name: 'Cable Curl (EZ bar)', sets: 3, reps: '12-15', rest: '60 sec', note: 'BICEP. Feel cue: keep elbows fixed at sides. 3-sec eccentric. DROP SET last set.', video: 'dumbbell bicep curl' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips. Progressive overload every week. DROP SET last set.', video: 'Jeff Nippard cable crunch abs' },
-      { name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Feel cue: posterior pelvic tilt first. Slow and controlled. Add ankle weight when easy.', video: 'Jeff Nippard hanging leg raise abs' },
+      { name: 'Lying Leg Raise (floor)', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Lie on your back, hands under glutes. Feel cue: press lower back into the floor BEFORE lifting so the abs work, not the hip flexors. Slow 3-sec lower, stop before heels touch. Bend knees slightly if needed. Add an ankle weight or hold a light dumbbell between your feet once 15 reps feel easy.', video: 'lying leg raise floor abs technique' },
       { name: 'Cable Woodchop (high to low)', sets: 3, reps: '12 each side', rest: '45 sec', note: 'ROTATIONAL CORE. Feel cue: rotation comes from torso, not arms — arms are just the connection. Only rotational core work in the program.', video: 'Jeff Nippard cable woodchop obliques' },
       { name: 'Incline Bike (cardio finisher)', sets: 0, reps: '15 min', rest: '', note: 'POST-WORKOUT CARDIO. 15 min on the bike with incline/resistance up. Keep it Zone 2 — steady pace where you could still hold a conversation, breathing harder but not gasping. Fat-burning finisher while glycogen is already low from lifting. Optional on heavy-fatigue days.', video: 'incline bike cardio zone 2' },
     ]
@@ -3180,12 +3211,9 @@ const DAYS = [
   {
     key: 'upper', name: 'Fri', label: 'UPPER BODY', title: 'Upper Body', subtitle: 'Chest, Back, Shoulders + Arms',
     warmup: [
-      { name: 'Light cardio', duration: '3-5 min', desc: 'Rowing machine is ideal — warms the whole upper body before pressing and pulling.', video: '' },
-      { name: 'Arm circles', duration: '30 sec each direction', desc: 'Forward and backward. Wakes up the shoulders before any pressing.', video: 'arm circles shoulder warm up exercise' },
-      { name: 'Band pull-apart', duration: '2×15 reps', desc: 'Hold a band at shoulder height, pull apart squeezing shoulder blades. Primes rear delts and upper back, protects the shoulders.', video: 'band pull apart rear delt warm up' },
-      { name: 'Push-up', duration: '1×12 reps', desc: 'Controlled, full range. Activates chest, shoulders and triceps.', video: 'push up warm up activation technique' },
-      { name: 'Dead hang', duration: '1×20-30 sec', desc: 'Hang from the bar. Decompresses the spine and opens the shoulders before pulling.', video: 'dead hang exercise benefits technique' },
-      { name: 'Light shoulder press (empty bar or light DB)', duration: '1×12 reps', desc: 'Rehearse the press pattern light before loading. Grease the groove.', video: 'shoulder press warm up technique' },
+      { name: 'Light cardio', duration: '3-5 min', desc: 'Rowing machine warms the whole upper body. Raise body temp.', video: '' },
+      { name: 'Band pull-aparts (POSTURE)', duration: '2×20 reps', desc: 'Pull a band apart at shoulder height, squeeze shoulder blades. Sets your shoulders back and down before pressing. Your daily posture-fixer.', video: 'band pull apart posture rear delt' },
+      { name: 'Quick upper prep', duration: '~1 min', desc: 'Optional: 10 arm circles each way. Then ramp up on your first press (see below).', video: 'arm circles shoulder warm up' },
     ],
     cooldown: [
       { name: 'Doorway chest stretch', duration: '2×30 sec', desc: 'Forearm on a doorframe, step through to stretch the chest. Counteracts all the pressing.', video: 'doorway chest stretch pec' },
@@ -3194,11 +3222,12 @@ const DAYS = [
       { name: 'Triceps overhead stretch', duration: '2×30 sec each arm', desc: 'Bend one elbow behind your head, push gently with the other hand.', video: 'triceps overhead stretch' },
     ],
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 4, reps: '8-12', rest: '90 sec', note: 'UPPER CHEST (the aesthetic shelf). LOADED STRETCH: pause 1 sec at the bottom feeling the chest stretch. Press up and slightly together. Add weight when you hit 12 all 4 sets.', video: 'incline dumbbell press' },
+      { name: 'Incline Dumbbell Press', sets: 4, reps: '8-12', rest: '90 sec', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | UPPER CHEST (the aesthetic shelf). LOADED STRETCH: pause 1 sec at the bottom feeling the chest stretch. Press up and slightly together. Add weight when you hit 12 all 4 sets.', video: 'incline dumbbell press' },
       { name: 'Lat Pulldown (wide grip)', sets: 4, reps: '10-12', rest: '90 sec', note: 'BACK WIDTH (the V-taper). Feel cue: drive elbows down and back, lead with the elbows not the hands. Full stretch at the top, squeeze at the bottom.', video: 'lat pulldown wide grip' },
       { name: 'Seated Dumbbell Shoulder Press', sets: 4, reps: '8-12', rest: '90 sec', note: 'SHOULDER CAPS (3D delts). Press without locking out hard. Keep tension on the delts. This is a key aesthetics lift — round shoulders make the whole physique look bigger.', video: 'seated dumbbell shoulder press' },
       { name: 'Chest-Supported Row', sets: 3, reps: '10-12', rest: '75 sec', note: 'BACK THICKNESS. Chest on the pad so there is zero momentum. Feel cue: squeeze the shoulder blades together hard at the top, hold 1 sec.', video: 'chest supported dumbbell row' },
-      { name: 'Cable Lateral Raise', sets: 4, reps: '12-15', rest: '45 sec', note: 'SIDE DELTS = SHOULDER WIDTH. The single most important exercise for an aesthetic upper body. Feel cue: lead with the elbow, lift to shoulder height, control down slow. DROP SET the last set.', video: 'cable lateral raise' },
+      { name: 'Cable Lateral Raise', sets: 4, reps: '12-15', rest: '45 sec', note: 'SIDE DELTS = SHOULDER WIDTH. Your #1 exercise for a wider frame. Go LIGHT and high-rep (12-20) — most people go too heavy and swing, which steals the work off the side delt. Feel cue: lead with the ELBOW not the hand, lift only to shoulder height, lower slow (3 sec). Quality over weight. DROP SET the last set.', video: 'cable lateral raise' },
+      { name: 'Reverse Pec Deck (rear delt)', sets: 4, reps: '15-20', rest: '45 sec', note: 'REAR DELTS = POSTURE + WIDTH. Pulls the shoulders back, fixes the forward-rounded look, and adds to the 3D delt cap. Feel cue: lead with the elbows, squeeze shoulder blades, pause at the back. Light, high-rep, controlled.', video: 'reverse pec deck rear delt' },
       { name: 'Incline Dumbbell Curl', sets: 3, reps: '10-12', rest: '60 sec', note: 'BICEP PEAK. Lie back on an incline bench, arms hanging behind the body. LOADED STRETCH: this is the most stretched bicep position there is. 3-sec eccentric. DROP SET last set.', video: 'incline dumbbell curl' },
       { name: 'Overhead Cable Triceps Extension', sets: 3, reps: '12-15', rest: '60 sec', note: 'TRICEP LONG HEAD = ARM SIZE. Overhead position puts the long head on full stretch. Feel cue: keep elbows tight, extend fully, feel the stretch behind the arm. DROP SET last set.', video: 'overhead cable triceps extension' },
       { name: 'Incline Bike (cardio finisher)', sets: 0, reps: '15 min', rest: '', note: 'POST-WORKOUT CARDIO. 15 min on the bike with incline/resistance up. Keep it Zone 2 — steady pace where you could still hold a conversation, breathing harder but not gasping. Fat-burning finisher while glycogen is already low from lifting. Optional on heavy-fatigue days.', video: 'incline bike cardio zone 2' },
@@ -3207,11 +3236,8 @@ const DAYS = [
   {
     key: 'posterior', name: 'Sat', label: 'GLUTES + HAMSTRINGS', title: 'Glutes & Hamstrings', subtitle: 'Posterior chain build',
     warmup: [
-      { name: 'Light cardio', duration: '5 min', desc: 'Incline treadmill walk (8-10% grade). Pre-activates the glutes before loading.', video: '' },
-      { name: 'Glute bridge (bodyweight)', duration: '2×15 reps', desc: 'Drive hips up, squeeze glutes hard at the top for 1 sec. The key wake-up before hip thrusts.', video: 'Bret Contreras glute bridge activation' },
-      { name: 'Banded lateral walk', duration: '2×12 each direction', desc: 'Band around the knees, half-squat, step sideways keeping tension. Fires the glute medius (side glute = roundness).', video: 'Bret Contreras banded lateral walk glute' },
-      { name: 'Bodyweight good morning', duration: '2×12 reps', desc: 'Hands on chest, soft knees, hinge at the hips with a flat back. Grooves the hinge and warms the hamstrings.', video: 'bodyweight good morning hip hinge' },
-      { name: 'Banded clamshell', duration: '2×15 each side', desc: 'Lie on your side, band around knees, open the top knee. Targets the upper glute. Slow and controlled.', video: 'Bret Contreras clamshell glute medius' },
+      { name: 'Light cardio', duration: '5 min', desc: 'Incline treadmill walk pre-activates the glutes. Raise body temp.', video: '' },
+      { name: 'Quick glute prep', duration: '~2 min', desc: 'Optional but useful: 15 glute bridges + 12 banded lateral walks each way to switch on the glutes. Then ramp up on your first lift (see below).', video: 'Bret Contreras glute bridge activation' },
     ],
     cooldown: [
       { name: 'Pigeon pose', duration: '2×40 sec each side', desc: 'Front shin across the mat, back leg extended, fold forward. The deep glute stretch after a posterior session.', video: 'pigeon pose glute stretch hip opener' },
@@ -3220,7 +3246,7 @@ const DAYS = [
       { name: 'Child\'s pose', duration: '1×45 sec', desc: 'Kneel, sit back, arms forward. Decompresses the lower back after hip thrusts and deadlifts.', video: 'childs pose stretch yoga' },
     ],
     exercises: [
-      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: 'THE #1 GLUTE BUILDER, second hit of the week. Pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze hard, full lockout with ribs down. PAUSE 2 sec at the top of every rep. Push close to failure.', video: 'hip thrust' },
+      { name: 'Machine Hip Thrust', sets: 4, reps: '8-10', rest: '2-3 min', note: '🔥 RAMP UP FIRST (your warm-up for the day): do 2-3 light sets before your working weight — e.g. empty bar or light × 12, then ~50% × 8, then ~70% × 5. This primes the movement and joints. Then start your real sets below. | THE #1 GLUTE BUILDER, second hit of the week. Pad on shoulder blades, feet flat. Feel cue: drive through HEELS, squeeze hard, full lockout with ribs down. PAUSE 2 sec at the top of every rep. Push close to failure.', video: 'hip thrust' },
       { name: 'Romanian Deadlift (RDL)', sets: 4, reps: '8-10', rest: '2 min', note: 'HAMSTRING + GLUTE STRETCH. Soft knees, push hips BACK, bar close to the legs. LOADED STRETCH: lower to a deep stretch at mid-shin, pause 1 sec — this is where hamstrings grow. Squeeze glutes to stand.', video: 'romanian deadlift' },
       { name: 'Seated Leg Curl', sets: 4, reps: '10-12', rest: '75 sec', note: 'HAMSTRING ISOLATION. Seated is best — it puts the hamstring on stretch. Feel cue: curl heels toward glutes. 3-sec eccentric. DROP SET the last set.', video: 'seated leg curl hamstrings' },
       { name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each leg', rest: '90 sec', note: 'UNILATERAL GLUTE. Rear foot on a bench, torso leaned slightly FORWARD to bias the glutes. Feel cue: push through the front heel, feel the glute stretch at the bottom. Builds the round, lifted look.', video: 'bulgarian split squat' },
@@ -3284,6 +3310,8 @@ function switchTab(name) {
     tools: renderDeloadCycleTracker, massage: initMassageGuide, myclubs: initMyClubs,
     meditation: initMeditation, projection: initProjection, steps: initSteps,
     tennislog: initTennisLog, cheatlog: initCheatLog, shopping: initShopping,
+    mobility: initMobility,
+    calisthenics: initCalisthenics,
   };
   const fn = inits[name];
   if (typeof fn === 'function') {
@@ -4253,6 +4281,151 @@ const MASSAGE_PLACES = [
   },
 ];
 
+const MOBILITY_ROUTINE = [
+  { group: 'Hamstrings & lower back (touch your toes)', color: '#3b82f6', items: [
+    { name: 'Standing forward fold', time: '60 sec', cue: 'Feet hip-width, soft knees, hinge at the hips and hang. Let your head and arms dangle. Each exhale, sink a little lower. The #1 toe-touch builder.' },
+    { name: 'Seated forward fold', time: '60 sec', cue: 'Sit, legs straight, reach toward your toes with a flat back (lead with the chest, not a rounded spine). Loop a towel around your feet if you cannot reach.' },
+    { name: 'Single-leg hamstring stretch', time: '45 sec each', cue: 'One heel on a low bench or step, hinge forward over the straight leg, back flat. Targets each hamstring individually.' },
+    { name: 'Lying hamstring (with towel/strap)', time: '45 sec each', cue: 'On your back, loop a towel around one foot, straighten the leg toward the ceiling and gently pull. Safest deep hamstring stretch.' },
+  ]},
+  { group: 'Hips (open and loosen)', color: '#22c55e', items: [
+    { name: 'Deep squat hold (Asian squat)', time: '60-90 sec', cue: 'Squat all the way down, heels flat, elbows pushing knees apart. Hold and breathe. Opens hips, ankles and lower back at once. Hold a support if you tip back.' },
+    { name: 'Pigeon pose', time: '60 sec each', cue: 'Front shin across the mat, back leg straight behind, fold forward over the front leg. The deepest glute and hip-flexor opener.' },
+    { name: 'Couch stretch (hip flexor)', time: '45 sec each', cue: 'Rear foot up on a couch/bench, kneel on that leg, push hips forward and stand tall. Undoes desk-sitting tightness.' },
+    { name: 'Butterfly stretch', time: '60 sec', cue: 'Sit, soles of feet together, let knees drop, gently press them down. Opens the inner thighs and groin.' },
+    { name: '90/90 hip switches', time: '8-10 each side', cue: 'Sit with both knees bent at 90 degrees, one in front one to the side, rotate both knees to switch sides. Active hip mobility.' },
+  ]},
+  { group: 'Shoulders & chest (open, fix posture)', color: '#f59e0b', items: [
+    { name: 'Doorway chest stretch', time: '45 sec', cue: 'Forearm on the doorframe at shoulder height, step through. Stretches the chest that pulls your shoulders forward. Do this often, it directly helps your posture.' },
+    { name: 'Cross-body shoulder stretch', time: '30 sec each', cue: 'Pull one straight arm across your chest with the other hand. Rear delt and shoulder.' },
+    { name: 'Overhead triceps + lat stretch', time: '30 sec each', cue: 'Bend one elbow behind your head, gently push with the other hand. Reach and lean for the lat.' },
+    { name: 'Thread the needle', time: '45 sec each', cue: 'On all fours, thread one arm under the body and rotate. Opens the upper back and shoulders.' },
+    { name: 'Shoulder dislocates (band/towel)', time: '10 slow reps', cue: 'Hold a band or towel wide, pass it overhead from front to back and return. Builds overhead shoulder range. Go wide if tight.' },
+  ]},
+  { group: 'Spine & full body', color: '#a855f7', items: [
+    { name: 'Cat-cow', time: '10 slow reps', cue: 'On all fours, alternate arching and rounding your spine with your breath. Wakes up the whole spine.' },
+    { name: 'Thoracic rotation (open book)', time: '8 each side', cue: 'Lie on your side, knees bent, open the top arm to the other side following it with your eyes. Mid-back rotation.' },
+    { name: 'Child\'s pose', time: '60 sec', cue: 'Kneel, sit back on your heels, reach arms forward. Decompresses the spine and opens the lats.' },
+  ]},
+];
+
+function getMobilityDoneKey() { return 'mobility_done_' + new Date().toISOString().split('T')[0]; }
+function getMobilityDone() { try { return JSON.parse(localStorage.getItem(getMobilityDoneKey()) || '[]'); } catch(e) { return []; } }
+function toggleMobilityDone(id) {
+  const done = getMobilityDone();
+  const i = done.indexOf(id);
+  if (i === -1) done.push(id); else done.splice(i, 1);
+  localStorage.setItem(getMobilityDoneKey(), JSON.stringify(done));
+  renderMobility();
+}
+function initMobility() { renderMobility(); }
+function renderMobility() {
+  const c = document.getElementById('mobility-content');
+  if (!c) return;
+  const done = getMobilityDone();
+  const total = MOBILITY_ROUTINE.reduce((s, g) => s + g.items.length, 0);
+  let html = `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div><div style="font-size:13px;font-weight:700">Today's progress</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Tick stretches as you do them. Resets daily.</div></div>
+    <div style="font-size:20px;font-weight:800;color:var(--accent)">${done.length}/${total}</div>
+  </div>`;
+  MOBILITY_ROUTINE.forEach((g, gi) => {
+    html += `<div style="font-size:13px;font-weight:700;color:${g.color};margin:18px 0 8px">${g.group}</div>`;
+    g.items.forEach((it, ii) => {
+      const id = gi + '-' + ii;
+      const isDone = done.indexOf(id) !== -1;
+      html += `<div onclick="toggleMobilityDone('${id}')" style="display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid ${isDone ? '#22c55e' : 'var(--border)'};border-radius:10px;padding:12px;margin-bottom:9px;cursor:pointer;touch-action:manipulation;${isDone ? 'opacity:0.6' : ''}">
+        <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${isDone ? '#22c55e' : 'var(--border2)'};background:${isDone ? '#22c55e' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;margin-top:1px">${isDone ? '✓' : ''}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="font-size:14px;font-weight:600;${isDone ? 'text-decoration:line-through' : ''}">${it.name}</div>
+            <div style="font-size:11px;font-weight:700;color:${g.color};white-space:nowrap">${it.time}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.45">${it.cue}</div>
+        </div>
+      </div>`;
+    });
+  });
+  html += `<div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px">Consistency beats intensity. Even 5-10 minutes a few times a week improves flexibility over a month. Stretch warm, breathe into each position, and never force into pain. To touch your toes, the standing and seated forward folds plus the lying hamstring stretch are your key three.</div>`;
+  c.innerHTML = html;
+}
+
+// Heria-style beginner calisthenics. Standard public-domain movements; videos link to his free YouTube.
+const CALI_SECTIONS = [
+  { group: 'Warm-up (do first, ~5 min)', color: '#3b82f6', items: [
+    { name: 'Arm circles + shoulder rolls', detail: '30 sec each', cue: 'Loosen the shoulders before any pushing or pulling.', vid: 'THENX warm up routine' },
+    { name: 'Jumping jacks', detail: '30-45 sec', cue: 'Raise the heart rate and get blood into the muscles.', vid: 'jumping jacks warm up' },
+    { name: 'Wrist warm-up', detail: '60 sec', cue: 'Essential for calisthenics. Rotate wrists, press palms together, lean weight onto hands gently. Protects against wrist strain in planks and dips.', vid: 'Chris Heria wrist warm up calisthenics' },
+    { name: 'Scapular shrugs (on bar or floor)', detail: '10 reps', cue: 'Hang or push position, move only the shoulder blades up and down. Wakes up the scapula for pull and push skills.', vid: 'scapular shrugs calisthenics' },
+  ]},
+  { group: 'Push strength', color: '#ef4444', items: [
+    { name: 'Incline push-up → Push-up', detail: '3 × 8-12', cue: 'Start with hands on a bench/table (incline = easier). As you get stronger, lower the surface until you do full floor push-ups. Body straight, elbows ~45 degrees, chest to the surface.', vid: 'Chris Heria perfect push up' },
+    { name: 'Pike push-up', detail: '3 × 5-10', cue: 'Hips up in an upside-down V, lower your head toward the floor. Beginner shoulder-press builder and the first step toward a handstand push-up.', vid: 'THENX pike push up tutorial' },
+    { name: 'Bench dips → Parallel bar dips', detail: '3 × 8-12', cue: 'Start with hands on a bench, feet out front. Progress to parallel bars holding your bodyweight. Builds triceps and lower chest.', vid: 'Chris Heria dips tutorial' },
+  ]},
+  { group: 'Pull strength', color: '#22c55e', items: [
+    { name: 'Bodyweight row (under a bar/table)', detail: '3 × 8-12', cue: 'Lie under a low bar or sturdy table, pull your chest up to it, body straight. The best beginner pulling move, the more horizontal you are the harder it gets.', vid: 'Chris Heria bodyweight rows' },
+    { name: 'Dead hang', detail: '3 × max time', cue: 'Just hang from the bar. Builds the grip and shoulder strength you need for pull-ups. Aim to grow your hang time each week.', vid: 'THENX dead hang' },
+    { name: 'Negative pull-up', detail: '3 × 3-5', cue: 'Jump or step to the top of a pull-up (chin over bar), then lower yourself as SLOWLY as possible (aim 3-5 sec). The fastest way to your first pull-up. Also use your assist machine.', vid: 'Chris Heria how to do your first pull up' },
+  ]},
+  { group: 'Legs', color: '#a855f7', items: [
+    { name: 'Bodyweight squat', detail: '3 × 15-20', cue: 'Feet shoulder-width, sit back and down, chest up, full depth. Slow and controlled.', vid: 'THENX bodyweight squat' },
+    { name: 'Reverse lunge', detail: '3 × 10 each leg', cue: 'Step back into a lunge, front thigh parallel, push back up. Easier on the knees than forward lunges.', vid: 'reverse lunge bodyweight' },
+    { name: 'Glute bridge → Single-leg bridge', detail: '3 × 15', cue: 'On your back, drive hips up and squeeze the glutes. Progress to one leg at a time.', vid: 'glute bridge bodyweight' },
+    { name: 'Calf raises', detail: '3 × 20', cue: 'On a step for full range, rise onto the toes, slow lower into a stretch.', vid: 'bodyweight calf raise' },
+  ]},
+  { group: 'Core & skills (the fun Heria stuff)', color: '#f59e0b', items: [
+    { name: 'Plank → Plank reaches', detail: '3 × 30-45 sec', cue: 'Forearms down, body dead straight, brace the abs. Progress by reaching one arm forward at a time.', vid: 'Chris Heria plank' },
+    { name: 'Hollow body hold', detail: '3 × 20-30 sec', cue: 'On your back, lower back pressed down, arms and legs extended and lifted slightly. The foundation of every calisthenics skill. Bend knees to make it easier.', vid: 'THENX hollow body hold' },
+    { name: 'Tuck L-sit (on floor or bars)', detail: '3 × 10-20 sec', cue: 'Hands on the floor or parallettes, lift your body with knees tucked to your chest. Progress toward straightening the legs into a full L-sit.', vid: 'Chris Heria L sit tutorial' },
+    { name: 'Leg raises (lying → hanging)', detail: '3 × 12-15', cue: 'Start lying on the floor (hands under glutes, press lower back down). Progress to hanging knee raises on a bar.', vid: 'Chris Heria leg raises' },
+    { name: 'Pseudo planche lean', detail: '3 × 15-20 sec', cue: 'In a push-up position, lean your shoulders forward past your hands onto your wrists. The first building block toward the planche. Go only as far as your wrists allow.', vid: 'THENX pseudo planche lean tutorial' },
+  ]},
+];
+
+function getCaliDoneKey() { return 'cali_done_' + new Date().toISOString().split('T')[0]; }
+function getCaliDone() { try { return JSON.parse(localStorage.getItem(getCaliDoneKey()) || '[]'); } catch(e) { return []; } }
+function toggleCaliDone(id) {
+  const done = getCaliDone();
+  const i = done.indexOf(id);
+  if (i === -1) done.push(id); else done.splice(i, 1);
+  localStorage.setItem(getCaliDoneKey(), JSON.stringify(done));
+  renderCalisthenics();
+}
+function initCalisthenics() { renderCalisthenics(); }
+function renderCalisthenics() {
+  const c = document.getElementById('calisthenics-content');
+  if (!c) return;
+  const done = getCaliDone();
+  const total = CALI_SECTIONS.reduce((s, g) => s + g.items.length, 0);
+  let html = `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+    <div><div style="font-size:13px;font-weight:700">Today's progress</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Tick as you go. Resets daily.</div></div>
+    <div style="font-size:20px;font-weight:800;color:var(--accent)">${done.length}/${total}</div>
+  </div>
+  <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:8px;padding:10px 12px;background:var(--surface2);border-radius:8px">Beginner approach: pick the easier version of each move, do it slow and clean, rest 60-90 sec between sets. Full session is all groups; short on time, just do warm-up + one or two groups. Video buttons open Chris Heria / THENX tutorials on YouTube.</div>`;
+  CALI_SECTIONS.forEach((g, gi) => {
+    html += `<div style="font-size:13px;font-weight:700;color:${g.color};margin:18px 0 8px">${g.group}</div>`;
+    g.items.forEach((it, ii) => {
+      const id = gi + '-' + ii;
+      const isDone = done.indexOf(id) !== -1;
+      html += `<div style="background:var(--surface);border:1px solid ${isDone ? '#22c55e' : 'var(--border)'};border-radius:10px;padding:12px;margin-bottom:9px;${isDone ? 'opacity:0.6' : ''}">
+        <div style="display:flex;gap:11px;align-items:flex-start">
+          <div onclick="toggleCaliDone('${id}')" style="width:22px;height:22px;border-radius:6px;border:2px solid ${isDone ? '#22c55e' : 'var(--border2)'};background:${isDone ? '#22c55e' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;margin-top:1px;cursor:pointer">${isDone ? '✓' : ''}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <div style="font-size:14px;font-weight:600;${isDone ? 'text-decoration:line-through' : ''}">${it.name}</div>
+              <div style="font-size:11px;font-weight:700;color:${g.color};white-space:nowrap">${it.detail}</div>
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.45">${it.cue}</div>
+            <a href="${videoUrl(it.vid)}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;font-weight:500;color:#FF0000;text-decoration:none;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);padding:4px 10px;border-radius:12px;touch-action:manipulation">▶ Heria tutorial</a>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  html += `<div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px">Progress rule: when you hit the top of a rep range with clean form, move to the harder version. Skills like the L-sit and planche lean come slowly, train them little and often. 2-3 calisthenics sessions a week alongside your lifting is plenty.</div>`;
+  c.innerHTML = html;
+}
+
 function initMassageGuide() {
   const container = document.getElementById('massage-guide-content');
   if (!container || container.innerHTML) return;
@@ -4891,6 +5064,7 @@ const HABITS = [
   { id: 'noalcohol', label: 'No alcohol today', icon: '🚫', category: 'Recovery' },
   { id: 'steps', label: '8,000+ steps', icon: '🚶', category: 'Activity' },
   { id: 'stretching', label: 'Stretched / mobility work', icon: '🧘', category: 'Recovery' },
+  { id: 'posture', label: 'Posture: chest stretch + shoulders back', icon: '🧍', category: 'Recovery' },
   { id: 'calories', label: 'Stayed within calorie target', icon: '🎯', category: 'Nutrition' },
 ];
 
@@ -7715,6 +7889,180 @@ function renderCooldown() {
     </div>`;
 }
 
+// Alternatives for when the gym is packed / equipment is taken.
+// Keyed by exercise name → array of swaps hitting the same muscle with different equipment.
+const EXERCISE_ALTERNATIVES = {
+  'Barbell Bench Press': [
+    { name: 'Dumbbell Bench Press', reps: '8-12', note: 'Same chest stimulus, only needs dumbbells + a bench. Lower until you feel the chest stretch, press up.' },
+    { name: 'Machine Chest Press', reps: '10-12', note: 'If a press machine is free. Stable, easy to push close to failure.' },
+    { name: 'Push-up (weighted/feet elevated)', reps: '12-20', note: 'No equipment at all. Elevate feet or add a plate on your back to make it hard.' },
+  ],
+  'Incline Dumbbell Press': [
+    { name: 'Incline Barbell Press', reps: '8-10', note: 'If a bench + barbell is free instead of dumbbells.' },
+    { name: 'Incline Machine Press', reps: '10-12', note: 'Any incline/chest press machine.' },
+    { name: 'Incline Push-up', reps: '15-20', note: 'Hands on a bench, feet on floor. Bodyweight upper-chest option.' },
+  ],
+  'Barbell Squat': [
+    { name: 'Hack Squat / Leg Press', reps: '8-12', note: 'If the rack is taken. Machine, same quad focus, easier to load safely.' },
+    { name: 'Goblet Squat (dumbbell)', reps: '10-15', note: 'Hold one dumbbell at your chest. Just needs a single dumbbell.' },
+    { name: 'Bulgarian Split Squat', reps: '10-12 each', note: 'One dumbbell or bodyweight, rear foot on a bench. Brutal and needs no rack.' },
+  ],
+  'Deadlift (conventional)': [
+    { name: 'Romanian Deadlift', reps: '8-10', note: 'Same hinge, lighter load, more hamstring. Dumbbells or barbell.' },
+    { name: 'Trap Bar Deadlift', reps: '8-10', note: 'If a trap bar is free. Easier on the back.' },
+    { name: 'Back Extension + Cable Pull-Through', reps: '12-15', note: 'Two posterior-chain moves if no platform is free.' },
+  ],
+  'Pull-up (weighted if possible)': [
+    { name: 'Lat Pulldown', reps: '10-12', note: 'Same vertical pull on a machine if the bar is taken.' },
+    { name: 'Assisted Pull-up Machine', reps: '8-12', note: 'The assist machine — lower the help number over time.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'If both are busy. Hits the lats from a row angle.' },
+  ],
+  'Pull-up or Lat Pulldown': [
+    { name: 'Assisted Pull-up Machine', reps: '8-12', note: 'The assist machine — lower the help number over time.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'Lat-focused row with one dumbbell.' },
+    { name: 'Chest-Supported Row', reps: '10-12', note: 'Any supported row if pulldown + bar are taken.' },
+  ],
+  'Lat Pulldown (wide grip)': [
+    { name: 'Assisted Pull-up', reps: '8-12', note: 'Vertical pull on the assist machine.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'Needs just one dumbbell.' },
+    { name: 'Straight-arm Pulldown', reps: '12-15', note: 'If only a cable is free. Isolates the lats.' },
+  ],
+  'Seated Overhead Press (Smith or DB)': [
+    { name: 'Standing Dumbbell Press', reps: '8-10', note: 'Just two dumbbells, press overhead standing.' },
+    { name: 'Machine Shoulder Press', reps: '10-12', note: 'Any shoulder press machine.' },
+    { name: 'Arnold Press', reps: '10-12', note: 'Dumbbell press with a rotation, great delt builder.' },
+  ],
+  'Seated Dumbbell Shoulder Press': [
+    { name: 'Standing Dumbbell Press', reps: '8-10', note: 'Same movement, standing. Just dumbbells.' },
+    { name: 'Machine Shoulder Press', reps: '10-12', note: 'Any shoulder press machine.' },
+    { name: 'Arnold Press', reps: '10-12', note: 'Rotational dumbbell press.' },
+  ],
+  'Arnold Press (dumbbell)': [
+    { name: 'Standing Dumbbell Press', reps: '8-10', note: 'Straightforward overhead press with dumbbells.' },
+    { name: 'Machine Shoulder Press', reps: '10-12', note: 'If a machine is free.' },
+  ],
+  'Cable Lateral Raise': [
+    { name: 'Dumbbell Lateral Raise', reps: '12-20', note: 'Just two light dumbbells. Lead with the elbow, control down.' },
+    { name: 'Machine Lateral Raise', reps: '12-15', note: 'If a lateral raise machine is free.' },
+  ],
+  'Dumbbell Lateral Raise': [
+    { name: 'Cable Lateral Raise', reps: '12-20', note: 'One arm at a time on a low cable, constant tension.' },
+    { name: 'Machine Lateral Raise', reps: '12-15', note: 'If a machine is free.' },
+  ],
+  'Cable Lateral Raise + Face Pull SUPERSET': [
+    { name: 'DB Lateral Raise + Rear-Delt Fly', reps: '12-15 each', note: 'Two dumbbell moves: side raise then bent-over rear fly. No cable needed.' },
+  ],
+  'Chest-Supported DB Row': [
+    { name: 'Seated Cable Row', reps: '10-12', note: 'If a cable station is free.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'One knee on a bench, row one dumbbell.' },
+    { name: 'Machine Row', reps: '10-12', note: 'Any row machine.' },
+  ],
+  'Chest-Supported Row': [
+    { name: 'Seated Cable Row', reps: '10-12', note: 'If a cable station is free.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'One dumbbell, knee on bench.' },
+    { name: 'Machine Row', reps: '10-12', note: 'Any row machine.' },
+  ],
+  'Seated Cable Row (wide grip)': [
+    { name: 'Chest-Supported DB Row', reps: '10-12', note: 'Dumbbells + incline bench, no cable needed.' },
+    { name: 'Single-arm Dumbbell Row', reps: '10-12 each', note: 'Just one dumbbell.' },
+    { name: 'Machine Row', reps: '10-12', note: 'Any row machine.' },
+  ],
+  'Face Pull (rope)': [
+    { name: 'Rear-Delt Dumbbell Fly', reps: '15-20', note: 'Bent over, raise light dumbbells out to the sides. No cable needed.' },
+    { name: 'Band Pull-apart', reps: '20-25', note: 'A resistance band is all you need. Same rear-delt + posture work.' },
+    { name: 'Reverse Pec Deck', reps: '15-20', note: 'If the rear-delt machine is free.' },
+  ],
+  'Reverse Pec Deck (rear delt)': [
+    { name: 'Rear-Delt Dumbbell Fly', reps: '15-20', note: 'Bent over, light dumbbells out to the sides.' },
+    { name: 'Face Pull (rope)', reps: '20-25', note: 'If a cable is free.' },
+    { name: 'Band Pull-apart', reps: '20-25', note: 'Just a band.' },
+  ],
+  'Cable Chest Fly (low to high)': [
+    { name: 'Dumbbell Fly (incline)', reps: '12-15', note: 'Lie on an incline bench, dumbbells, wide arc. Feel the stretch.' },
+    { name: 'Pec Deck Machine', reps: '12-15', note: 'If the chest fly machine is free.' },
+    { name: 'Push-up (deep)', reps: '15-20', note: 'Bodyweight fallback, go deep for the stretch.' },
+  ],
+  'Overhead Cable Triceps Extension': [
+    { name: 'Overhead Dumbbell Extension', reps: '12-15', note: 'One dumbbell behind the head, both hands. Long-head stretch.' },
+    { name: 'Skull Crushers (EZ bar/DB)', reps: '10-12', note: 'Lying triceps extension on a bench.' },
+    { name: 'Bench Dips', reps: '12-20', note: 'Bodyweight, hands on a bench behind you.' },
+  ],
+  'Overhead Triceps Extension + Pushdown SUPERSET': [
+    { name: 'Overhead DB Ext + Bench Dips', reps: '12-15 each', note: 'Dumbbell overhead extension then bodyweight bench dips. No cable.' },
+    { name: 'Skull Crushers', reps: '10-12', note: 'Single triceps move if short on time.' },
+  ],
+  'Incline Dumbbell Curl': [
+    { name: 'Standing Dumbbell Curl', reps: '10-12', note: 'If no incline bench is free. Just dumbbells.' },
+    { name: 'Cable Curl', reps: '10-12', note: 'Constant tension on a cable.' },
+    { name: 'EZ-bar Curl', reps: '10-12', note: 'If a barbell/EZ bar is free.' },
+  ],
+  'Incline Dumbbell Curl + Hammer Curl SUPERSET': [
+    { name: 'Standing Curl + Hammer Curl', reps: '10-12 each', note: 'Both with dumbbells standing if no incline bench.' },
+    { name: 'Cable Curl + Rope Hammer', reps: '10-12 each', note: 'Both on a cable station.' },
+  ],
+  'Cable Curl (EZ bar)': [
+    { name: 'Dumbbell Curl', reps: '10-12', note: 'Just dumbbells.' },
+    { name: 'EZ-bar Curl', reps: '10-12', note: 'Free-weight version.' },
+  ],
+  'Machine Hip Thrust': [
+    { name: 'Barbell Hip Thrust', reps: '8-10', note: 'Bench + barbell + pad. Same movement, free weight.' },
+    { name: 'Single-leg Hip Thrust', reps: '12-15 each', note: 'Bodyweight or one dumbbell, shoulders on a bench.' },
+    { name: 'Glute Bridge (barbell/DB)', reps: '12-15', note: 'On the floor, no bench needed.' },
+  ],
+  'Romanian Deadlift (RDL)': [
+    { name: 'Dumbbell RDL', reps: '10-12', note: 'Two dumbbells instead of a barbell.' },
+    { name: 'Single-leg RDL', reps: '10-12 each', note: 'One dumbbell, great for balance + glutes.' },
+    { name: 'Seated Leg Curl + Back Extension', reps: '12-15', note: 'Two machines that cover hamstrings if no bar.' },
+  ],
+  'Seated Leg Curl': [
+    { name: 'Lying Leg Curl', reps: '10-12', note: 'The other leg curl machine if one is taken.' },
+    { name: 'Nordic Curl / Slider Curl', reps: '8-12', note: 'Bodyweight hamstring curl, brutal.' },
+    { name: 'Dumbbell RDL', reps: '10-12', note: 'Hinge movement for hamstrings, just dumbbells.' },
+  ],
+  'Bulgarian Split Squat': [
+    { name: 'Walking Lunges', reps: '12 each', note: 'Dumbbells, walk it out. Same unilateral leg work.' },
+    { name: 'Reverse Lunges', reps: '12 each', note: 'Step back into a lunge, easier on the knees.' },
+    { name: 'Leg Press (single leg)', reps: '12-15 each', note: 'If a leg press is free.' },
+  ],
+  'Hip Abduction Machine': [
+    { name: 'Banded Lateral Walk', reps: '15-20 each way', note: 'Resistance band around the knees, step sideways.' },
+    { name: 'Cable Hip Abduction', reps: '15-20 each', note: 'Ankle strap on a low cable, lift leg out.' },
+    { name: 'Side-lying Leg Raise', reps: '20 each', note: 'Bodyweight on the floor, raise top leg.' },
+  ],
+  'Cable Pull-Through': [
+    { name: 'Banded Pull-Through', reps: '15-20', note: 'A band anchored low instead of a cable.' },
+    { name: 'Dumbbell RDL', reps: '12-15', note: 'Same hip hinge with a dumbbell.' },
+    { name: 'Glute Bridge', reps: '15-20', note: 'Floor glute work, no equipment.' },
+  ],
+  'Standing Calf Raise': [
+    { name: 'Seated Calf Raise', reps: '15-20', note: 'If a seated calf machine is free.' },
+    { name: 'Single-leg DB Calf Raise', reps: '15-20 each', note: 'Hold one dumbbell, raise on a step.' },
+    { name: 'Bodyweight Calf Raise (on a step)', reps: '20-25', note: 'No equipment, full stretch at the bottom.' },
+  ],
+  'Dip (parallel bars)': [
+    { name: 'Bench Dips', reps: '12-20', note: 'Hands on a bench behind you, feet out front.' },
+    { name: 'Close-grip Push-up', reps: '15-20', note: 'Bodyweight triceps + chest.' },
+    { name: 'Machine Dip / Triceps Press', reps: '10-12', note: 'If an assisted dip or triceps machine is free.' },
+  ],
+  'Cable Crunch': [
+    { name: 'Lying Leg Raise', reps: '15', note: 'Floor ab work, no cable.' },
+    { name: 'Weighted Crunch / Sit-up', reps: '15-20', note: 'Hold a plate on your chest.' },
+    { name: 'Plank', reps: '45-60 sec', note: 'Isometric core hold, no equipment.' },
+  ],
+  'Lying Leg Raise (floor)': [
+    { name: 'Hanging Knee Raise', reps: '12-15', note: 'If a bar is free and your core is up to it.' },
+    { name: 'Reverse Crunch', reps: '15-20', note: 'Knees to chest on the floor, lift hips.' },
+    { name: 'Plank', reps: '45-60 sec', note: 'Core hold fallback.' },
+  ],
+  'Cable Woodchop (high to low)': [
+    { name: 'Russian Twist (weighted)', reps: '15 each side', note: 'Seated, twist a plate or dumbbell side to side.' },
+    { name: 'Band Woodchop', reps: '12 each side', note: 'A band anchored high instead of a cable.' },
+    { name: 'Side Plank', reps: '30-45 sec each', note: 'Oblique hold, no equipment.' },
+  ],
+};
+
+function getAlternatives(name) { return EXERCISE_ALTERNATIVES[name] || []; }
+
 // Verified direct YouTube video IDs for canonical form tutorials (confirmed live).
 // Anything not in this map falls back to a YouTube search (always works, never 404s).
 const DIRECT_VIDEOS = {
@@ -7750,7 +8098,10 @@ function renderExercises() {
   const day = DAYS[currentDay];
   const list = document.getElementById('exercise-list');
   list.innerHTML = '';
-  day.exercises.forEach((ex, i) => {
+  day.exercises.forEach((origEx, i) => {
+    // Apply a session swap if the user picked an alternative (gym busy)
+    const swap = getSessionSwap(day.key, i);
+    const ex = swap ? Object.assign({}, origEx, { name: swap.name, reps: swap.reps || origEx.reps, note: '🔁 SWAPPED (' + origEx.name + ' was busy): ' + (swap.note || '') + ' | Original target: ' + origEx.sets + '×' + origEx.reps + '.', video: swap.name }) : origEx;
     const card = document.createElement('div');
     card.className = 'ex-card';
     card.id = `ex-card-${i}`;
@@ -7822,8 +8173,9 @@ function renderExercises() {
             <div class="ex-stat"><div class="ex-stat-label">Rest</div><div class="ex-stat-val">${ex.rest}</div></div>
           </div>
           <div class="ex-note">${ex.note}</div>
+          ${getAlternatives(origEx.name).length ? `<div style="padding:0 0 4px">${swap ? `<button onclick="clearSessionSwap('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">↩ Back to ${origEx.name}</button>` : `<button onclick="showSwapOptions('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">⇄ Swap (gym busy?)</button>`}</div>` : ''}
         </div>
-        ${hasSets ? `<div class="log-section"><div class="log-title">Log Sets</div>${lastTimeHtml}${setsRows}<button class="log-save-btn${alreadyLogged ? ' saved' : ''}" onclick="saveLog(${i})">${alreadyLogged ? '✓ Saved' : 'Save Sets'}</button></div>` : ''}
+        ${hasSets ? `<div class="log-section"><div class="log-title">Log Sets</div>${lastTimeHtml}${setsRows}<button class="log-save-btn${alreadyLogged ? ' saved' : ''}" onclick="saveLog(${i})">${alreadyLogged ? '✓ Saved' : 'Save Sets'}</button></div>` : (isActivityItem(ex) ? renderDurationLog(ex, i, day.key, alreadyLogged) : '')}
       </div>`;
     list.appendChild(card);
   });
@@ -8083,12 +8435,86 @@ function saveLog(exIdx) {
   showToast('Sets saved ✓');
 }
 
+// ===== DURATION / CARDIO LOGGING (for sets:0 activity items) =====
+// An item is a loggable activity if it has no sets but a time-based target (contains 'min')
+// or is a known cardio/sport activity.
+function isActivityItem(ex) {
+  if (ex.sets > 0) return false;
+  const r = (ex.reps || '').toLowerCase();
+  const n = (ex.name || '').toLowerCase();
+  if (r.includes('min') || r.includes('hour')) return true;
+  if (/(bike|cardio|tennis|swim|swimming|walk|row|run|sauna|cycle|elliptical|stair)/.test(n)) return true;
+  return false;
+}
+function renderDurationLog(ex, exIdx, dayKey, alreadyLogged) {
+  const saved = getSavedLog(dayKey, exIdx);
+  const sMins = saved && saved.duration ? (saved.mins || '') : '';
+  const sLvl = saved && saved.duration ? (saved.level || '') : '';
+  const lt = getDurationLastTime(dayKey, exIdx);
+  let ltHtml = '';
+  if (lt) {
+    const d = new Date(lt.date + 'T12:00:00');
+    const ds = d.getDate() + '/' + (d.getMonth() + 1);
+    const parts = [];
+    if (lt.mins) parts.push(lt.mins + ' min');
+    if (lt.level) parts.push('lvl ' + lt.level);
+    ltHtml = `<div class="last-time-row"><span class="last-time-label">Last time (${ds})</span><span class="last-time-sets">${parts.join(' · ')}</span></div>`;
+  }
+  return `<div class="log-section">
+    <div class="log-title">Log Activity</div>
+    ${ltHtml}
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Minutes</div>
+        <input class="set-input" type="number" inputmode="numeric" placeholder="min" id="dur-min-${exIdx}" value="${sMins}" style="width:100%">
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Level / resistance</div>
+        <input class="set-input" type="text" inputmode="text" placeholder="e.g. 8" id="dur-lvl-${exIdx}" value="${sLvl}" style="width:100%">
+      </div>
+    </div>
+    <button class="log-save-btn dur-save-btn${alreadyLogged ? ' saved' : ''}" onclick="saveDurationLog(${exIdx})">${alreadyLogged ? '✓ Saved' : 'Save Activity'}</button>
+  </div>`;
+}
+
+function saveDurationLog(exIdx) {
+  const day = DAYS[currentDay];
+  const mins = document.getElementById(`dur-min-${exIdx}`)?.value;
+  const level = document.getElementById(`dur-lvl-${exIdx}`)?.value;
+  const log = { mins: mins || '', level: level || '', duration: true };
+  localStorage.setItem(getLogKey(day.key, exIdx), JSON.stringify(log));
+  const card = document.getElementById(`ex-card-${exIdx}`);
+  if (card) card.classList.add('logged');
+  const btn = card ? card.querySelector('.dur-save-btn') : null;
+  if (btn) { btn.classList.add('saved'); btn.textContent = '✓ Saved'; }
+  showToast('Activity saved ✓');
+}
+
+function getDurationLastTime(dayKey, exIdx) {
+  const today = new Date().toISOString().split('T')[0];
+  const prefix = `log_${dayKey}_${exIdx}_`;
+  let bestDate = null, best = null;
+  for (let k in localStorage) {
+    if (!k.startsWith(prefix)) continue;
+    const date = k.slice(prefix.length);
+    if (date >= today) continue;
+    try {
+      const log = JSON.parse(localStorage.getItem(k));
+      if (log && log.duration && (log.mins || log.level)) {
+        if (!bestDate || date > bestDate) { bestDate = date; best = log; }
+      }
+    } catch(e) {}
+  }
+  return best ? { date: bestDate, mins: best.mins, level: best.level } : null;
+}
+
 // Does a saved log exist for this exercise today, with real data?
 function isExerciseLoggedToday(dayKey, exIdx) {
   try {
     const raw = localStorage.getItem(getLogKey(dayKey, exIdx));
     if (!raw) return false;
     const log = JSON.parse(raw);
+    if (log.duration) return !!(log.mins || log.level);
     return Object.values(log).some(s => s && (s.kg || s.reps || s.done));
   } catch(e) { return false; }
 }
@@ -8165,6 +8591,62 @@ function finishWorkout() {
 
 function closeFinish() {
   document.getElementById('finish-overlay').style.display = 'none';
+}
+
+// ===== EXERCISE SWAP (gym busy) =====
+// Session swaps are stored per day+index for TODAY only, so the plan resets next day.
+function getSwapKey() { return 'session_swaps_' + new Date().toISOString().split('T')[0]; }
+function getSessionSwaps() {
+  try { return JSON.parse(localStorage.getItem(getSwapKey()) || '{}'); } catch(e) { return {}; }
+}
+function getSessionSwap(dayKey, idx) {
+  const swaps = getSessionSwaps();
+  return swaps[dayKey + '_' + idx] || null;
+}
+function setSessionSwap(dayKey, idx, alt) {
+  const swaps = getSessionSwaps();
+  swaps[dayKey + '_' + idx] = alt;
+  localStorage.setItem(getSwapKey(), JSON.stringify(swaps));
+}
+function clearSessionSwap(dayKey, idx) {
+  const swaps = getSessionSwaps();
+  delete swaps[dayKey + '_' + idx];
+  localStorage.setItem(getSwapKey(), JSON.stringify(swaps));
+  closeSwap();
+  renderExercises();
+}
+function showSwapOptions(dayKey, idx) {
+  const day = DAYS.find(d => d.key === dayKey);
+  if (!day) return;
+  const ex = day.exercises[idx];
+  const alts = getAlternatives(ex.name);
+  window._swapCtx = { dayKey, idx, alts };
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-size:17px;font-weight:800">Swap exercise</div>
+      <button onclick="closeSwap()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">${ex.name} taken? Pick an alternative that hits the same muscle. This swaps just for today.</div>`;
+  alts.forEach((alt, ai) => {
+    html += `<div onclick="pickSwap(${ai})" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:10px;cursor:pointer;touch-action:manipulation">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="font-size:14px;font-weight:700;color:var(--text)">${alt.name}</div>
+        <div style="font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap">${alt.reps}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.45">${alt.note}</div>
+    </div>`;
+  });
+  document.getElementById('swap-content').innerHTML = html;
+  document.getElementById('swap-overlay').style.display = 'flex';
+}
+function pickSwap(ai) {
+  const ctx = window._swapCtx;
+  if (!ctx) return;
+  setSessionSwap(ctx.dayKey, ctx.idx, ctx.alts[ai]);
+  closeSwap();
+  renderExercises();
+}
+function closeSwap() {
+  document.getElementById('swap-overlay').style.display = 'none';
 }
 
 function getISOWeek(d) {
