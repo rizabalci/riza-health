@@ -8232,7 +8232,7 @@ function renderExercises() {
             <div class="ex-stat"><div class="ex-stat-label">Rest</div><div class="ex-stat-val">${ex.rest}</div></div>
           </div>
           <div class="ex-note">${ex.note}</div>
-          ${getAlternatives(origEx.name).length ? `<div style="padding:0 0 4px">${swap ? `<button onclick="clearSessionSwap('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">↩ Back to ${origEx.name}</button>` : `<button onclick="showSwapOptions('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">⇄ Swap (gym busy?)</button>`}</div>` : ''}
+          ${getAlternatives(origEx.name).length ? `<div style="padding:0 0 4px">${swap ? `<button onclick="clearSessionSwap('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">↩ Back to ${origEx.name}</button>` : `<button onclick="showSwapOptions('${day.key}',${i})" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface3);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation">⇄ Swap</button>`}</div>` : ''}
         </div>
         ${hasSets ? `<div class="log-section"><div class="log-title">Log Sets</div>${lastTimeHtml}${setsRows}<button class="log-save-btn${alreadyLogged ? ' saved' : ''}" onclick="saveLog(${i})">${alreadyLogged ? '✓ Saved' : 'Save Sets'}</button></div>` : (isActivityItem(ex) ? renderDurationLog(ex, i, day.key, alreadyLogged) : '')}
       </div>`;
@@ -8684,7 +8684,7 @@ function showSwapOptions(dayKey, idx) {
       <div style="font-size:17px;font-weight:800">Swap exercise</div>
       <button onclick="closeSwap()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;line-height:1">×</button>
     </div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">${ex.name} taken? Pick an alternative that hits the same muscle. This swaps just for today.</div>`;
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Replacing <strong>${ex.name}</strong>. Pick an alternative that hits the same muscle. Swaps just for today.</div>`;
   alts.forEach((alt, ai) => {
     html += `<div onclick="pickSwap(${ai})" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:10px;cursor:pointer;touch-action:manipulation">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
