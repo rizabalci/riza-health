@@ -3130,7 +3130,15 @@
     <button class="timer-btn" onclick="skipTimer()">Skip</button>
     <button class="timer-btn primary" id="timer-pause-btn" onclick="toggleTimerPause()">Pause</button>
   </div>
-  <div style="margin-top:12px"><button class="timer-btn" id="timer-sound-btn" onclick="toggleTimerSound()" style="font-size:13px">🔊 Sound on</button></div>
+  <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
+    <button class="timer-btn" id="timer-sound-btn" onclick="toggleTimerSound()" style="font-size:13px">🔊 Sound on</button>
+    <button class="timer-btn" onclick="minimizeTimer()" style="font-size:13px">⤵ Minimize</button>
+  </div>
+</div>
+
+<!-- Floating mini-timer (shown when minimized so you can scroll/check next exercise) -->
+<div id="mini-timer" onclick="expandTimer()" style="display:none;position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:499;background:var(--accent);color:#000;border-radius:24px;padding:10px 18px;box-shadow:0 4px 16px rgba(0,0,0,0.35);cursor:pointer;font-weight:800;font-size:15px;align-items:center;gap:8px;touch-action:manipulation">
+  <span>⏱</span><span id="mini-timer-secs">60</span><span style="font-weight:600;font-size:12px">tap to expand</span>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3153,8 +3161,10 @@ const DAYS = [
       { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: initiate by squeezing pec, not pushing with arms. LOADED STRETCH: pause 1 sec at bottom where chest is maximally stretched — highest stimulus moment. Add weight when you hit 12 reps all 3 sets.', video: 'incline dumbbell press technique upper chest' },
       { name: 'Cable Chest Fly (low to high)', sets: 3, reps: '12-15', rest: '60 sec', note: 'ISOLATION + LOADED STRETCH. Feel cue: imagine hugging a tree. LOADED STRETCH: fully control cable out to max stretch, pause 1 sec there. DROP SET last set: hit 15 reps, reduce weight 30%, continue to failure.', video: 'cable chest fly' },
       { name: 'Seated Overhead Press (Smith or DB)', sets: 3, reps: '8-10', rest: '90 sec', note: 'HYPERTROPHY. Feel cue: drive elbows forward and up. Control descent. LAST SET: rest-pause after failure. Add 2.5kg when you hit 10 reps all 3 sets.', video: 'seated overhead press' },
-      { name: 'Cable Lateral Raise + Face Pull SUPERSET', sets: 3, reps: '12-15 + 15', rest: '60 sec after pair', note: 'SUPERSET. Lateral raise feel cue: lead with elbows, imagine pouring water sideways. DROP SET on lateral raise last set. Face pull: pull rope apart at face height, elbows high and wide.', video: 'cable lateral raise' },
-      { name: 'Overhead Triceps Extension + Pushdown SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec after pair', note: 'SUPERSET. Extension feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at bottom of extension where tricep is fully stretched. Pushdown: squeeze hold 1 sec at full extension.', video: 'overhead triceps extension' },
+      { name: 'Cable Lateral Raise', sets: 3, reps: '12-15', rest: '0 - go to Face Pull', note: '⚡ SUPERSET A1 (pair with Face Pull below). Do this, then immediately do the Face Pull, THEN rest. Feel cue: lead with elbows, imagine pouring water sideways. DROP SET on last set.', video: 'cable lateral raise', superset: 'A' },
+      { name: 'Face Pull (rope)', sets: 3, reps: '15-20', rest: '60 sec', note: '⚡ SUPERSET A2 (pair with Lateral Raise above). Do this straight after the lateral raise, THEN rest 60 sec. Feel cue: pull rope apart at face height, elbows high and wide, squeeze rear delts.', video: 'face pull rear delt', superset: 'A' },
+      { name: 'Overhead Triceps Extension', sets: 3, reps: '12', rest: '0 - go to Pushdown', note: '⚡ SUPERSET B1 (pair with Pushdown below). Do this, then immediately do the Pushdown, THEN rest. Feel cue: only forearms move, upper arm fixed vertical. LOADED STRETCH: pause at the stretched bottom.', video: 'overhead triceps extension', superset: 'B' },
+      { name: 'Triceps Pushdown', sets: 3, reps: '12', rest: '60 sec', note: '⚡ SUPERSET B2 (pair with Overhead Extension above). Do this straight after the extension, THEN rest 60 sec. Squeeze and hold 1 sec at full extension.', video: 'triceps pushdown cable', superset: 'B' },
       { name: 'Cable Crunch', sets: 4, reps: '15-20', rest: '45 sec', note: 'CORE. Feel cue: pull ribs toward hips, not head toward knees. DROP SET last set. Progressive overload every week.', video: 'Jeff Nippard cable crunch abs' },
       { name: 'Incline Bike or Treadmill Walk', sets: 0, reps: '15 min', rest: '', note: 'POST-WORKOUT CARDIO, 15 min. Either the incline bike OR an incline treadmill walk — both work, pick whatever is free. Treadmill walk hits glutes/hamstrings a bit more; bike is zero-impact (better when legs are trashed or joints ache). Keep it Zone 2: steady pace, breathing harder but could still talk. Optional on heavy-fatigue days.', video: 'incline bike cardio zone 2' },
     ]
@@ -3178,7 +3188,8 @@ const DAYS = [
       { name: 'Face Pull (rope)', sets: 4, reps: '20-25', rest: '45 sec', note: 'ROTATOR CUFF + POSTURE FIX. The #1 move for pulling rounded shoulders back. Feel cue: pull rope apart as you bring to face, externally rotate so knuckles end up beside your ears, SQUEEZE the rear delts and hold 1 sec. Light weight, high reps. Do these every chance you get — they directly fix the slump.', video: 'Jeff Nippard face pull rear delt' },
       { name: 'Reverse Pec Deck (rear delt)', sets: 4, reps: '15-20', rest: '45 sec', note: 'REAR DELTS = POSTURE + WIDTH. Weak rear delts let the shoulders round forward. Feel cue: lead with the elbows, squeeze the shoulder blades, pause 1 sec at the back. Light weight, high reps, no momentum. This is a key posture-fixer.', video: 'reverse pec deck rear delt' },
       { name: 'Dumbbell Lateral Raise', sets: 3, reps: '15-20', rest: '45 sec', note: 'SIDE DELTS = WIDTH (3rd hit of the week — side delts grow on frequency). LIGHT dumbbells, no swing. Feel cue: lead with the elbow, lift to shoulder height only, lower slow. If you can swing it up, it is too heavy.', video: 'dumbbell lateral raise' },
-      { name: 'Incline Dumbbell Curl + Hammer Curl SUPERSET', sets: 3, reps: '10 + 10', rest: '60 sec after pair', note: 'SUPERSET. Incline curl LOADED STRETCH: pause 1 sec at bottom where arm hangs back — highest bicep stimulus position. 3-sec eccentric. Hammer curl: neutral grip, slow descent.', video: 'dumbbell bicep curl' },
+      { name: 'Incline Dumbbell Curl', sets: 3, reps: '10', rest: '0 - go to Hammer Curl', note: '⚡ SUPERSET C1 (pair with Hammer Curl below). Do this, then immediately do the Hammer Curl, THEN rest. LOADED STRETCH: pause 1 sec at the bottom where the arm hangs back. 3-sec eccentric.', video: 'incline dumbbell curl', superset: 'C' },
+      { name: 'Hammer Curl', sets: 3, reps: '10', rest: '60 sec', note: '⚡ SUPERSET C2 (pair with Incline Curl above). Do this straight after the incline curl, THEN rest 60 sec. Neutral grip, slow descent.', video: 'hammer curl dumbbell', superset: 'C' },
       { name: 'Lying Leg Raise (floor)', sets: 3, reps: '12-15', rest: '60 sec', note: 'LOWER ABS. Lie on your back, hands under your glutes for support. Feel cue: press your lower back into the floor (posterior pelvic tilt) BEFORE lifting — this is what works the abs instead of the hip flexors. Lift legs to vertical, lower SLOW (3 sec), stop before your heels touch the floor to keep tension. Bend knees slightly if straight legs are too hard. Progress to a hanging bar later once this is easy.', video: 'lying leg raise floor abs technique' },
       { name: 'Incline Bike or Treadmill Walk', sets: 0, reps: '15 min', rest: '', note: 'POST-WORKOUT CARDIO, 15 min. Either the incline bike OR an incline treadmill walk — both work, pick whatever is free. Treadmill walk hits glutes/hamstrings a bit more; bike is zero-impact (better when legs are trashed or joints ache). Keep it Zone 2: steady pace, breathing harder but could still talk. Optional on heavy-fatigue days.', video: 'incline bike cardio zone 2' },
     ]
@@ -5492,7 +5503,7 @@ const HOME_WORKOUTS = {
       { name: 'Single Arm DB Row (on sofa)', sets: 3, reps: '12 each', rest: '60 sec', note: 'Knee and hand on sofa. Pull elbow straight up. Full range.', video: 'single arm dumbbell row home workout' },
       { name: 'Prone Y-T-W Raises', sets: 3, reps: '12 each', rest: '45 sec', note: 'Face down on floor. Raise arms in Y, T, then W shapes. Light or bodyweight. Rear delts and rotator cuff.', video: 'prone y t w exercise rear delt rotator cuff' },
       { name: 'Dumbbell Reverse Fly', sets: 3, reps: '15-20', rest: '45 sec', note: 'Hinge forward, arms hanging, raise sideways. Very light weight. Feel the squeeze.', video: 'dumbbell reverse fly rear delt form' },
-      { name: 'DB Bicep Curl + Hammer Curl SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec', note: 'Regular curl then hammer curl back to back. Slow 3-sec descent on both.', video: 'dumbbell bicep curl proper form' },
+      { name: 'DB Bicep Curl + Hammer Curl SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec', note: '⚡ SUPERSET (two moves back-to-back = 1 set): 12 reps Regular Curl, then immediately 12 reps Hammer Curl, then rest. | Regular curl then hammer curl back to back. Slow 3-sec descent on both.', video: 'dumbbell bicep curl proper form' },
       { name: 'Dead Bug', sets: 3, reps: '10 each side', rest: '30 sec', note: 'On back, arms up, legs 90. Lower opposite arm and leg without lifting lower back. Anti-extension core.', video: 'dead bug exercise core technique' },
     ],
     cooldown: ['Lat stretch arm overhead 30 sec each', 'Biceps wall stretch 20 sec each', 'Thread the needle rotation 10 each side'],
@@ -5508,7 +5519,7 @@ const HOME_WORKOUTS = {
       { name: 'DB Hip Thrust (against sofa)', sets: 4, reps: '15-20', rest: '90 sec', note: 'Shoulders on sofa seat, heaviest dumbbell on hips. Drive up and SQUEEZE 1 sec. Same movement as gym.', video: 'dumbbell hip thrust home workout sofa' },
       { name: 'Romanian Deadlift (dumbbells)', sets: 3, reps: '12-15', rest: '75 sec', note: 'Hinge at hips, feel the hamstring stretch. Both dumbbells together.', video: 'dumbbell romanian deadlift form technique' },
       { name: 'Bulgarian Split Squat (sofa)', sets: 3, reps: '12 each', rest: '90 sec', note: 'Rear foot on sofa, front foot forward. Hold dumbbells. Drop straight down.', video: 'bulgarian split squat home workout sofa' },
-      { name: 'Donkey Kick + Fire Hydrant SUPERSET', sets: 3, reps: '20 each, each leg', rest: '45 sec', note: 'Donkey kick: kick back and up. Fire hydrant: lift leg sideways. Back to back, no rest between.', video: 'donkey kick fire hydrant superset glutes' },
+      { name: 'Donkey Kick + Fire Hydrant SUPERSET', sets: 3, reps: '20 each, each leg', rest: '45 sec', note: '⚡ SUPERSET (two moves back-to-back = 1 set): 20 reps Donkey Kick, then immediately 20 reps Fire Hydrant, each leg, then rest. | Donkey kick: kick back and up. Fire hydrant: lift leg sideways. Back to back, no rest between.', video: 'donkey kick fire hydrant superset glutes' },
       { name: 'Single Leg Calf Raise', sets: 4, reps: '20 each', rest: '30 sec', note: 'Hold wall for balance. Full range, slow descent.', video: 'single leg calf raise bodyweight' },
       { name: 'Glute Bridge Hold (isometric)', sets: 3, reps: '30 sec hold', rest: '30 sec', note: 'Hips up, hold and squeeze continuously. Finisher.', video: 'glute bridge isometric hold exercise' },
     ],
@@ -5543,7 +5554,7 @@ const HOME_WORKOUTS = {
       { name: 'DB Row (bent over, single arm)', sets: 4, reps: '12 each', rest: '75 sec', note: 'Full range. Squeeze at top. Heavy.', video: 'dumbbell bent over row form technique' },
       { name: 'RDL + Curl COMBO', sets: 3, reps: '10', rest: '75 sec', note: 'Romanian deadlift down, curl at bottom, stand with the curl. Posterior chain + biceps.', video: 'romanian deadlift curl combo exercise' },
       { name: 'DB Hip Thrust (sofa)', sets: 3, reps: '15-20', rest: '60 sec', note: 'Heaviest dumbbell. Squeeze hard at top.', video: 'dumbbell hip thrust home workout sofa' },
-      { name: 'Lateral Raise + Curl SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec', note: 'Lateral raise immediately into bicep curl. Shoulders and arms together.', video: 'lateral raise bicep curl superset' },
+      { name: 'Lateral Raise + Curl SUPERSET', sets: 3, reps: '12 + 12', rest: '60 sec', note: '⚡ SUPERSET (two moves back-to-back = 1 set): 12 reps Lateral Raise, then immediately 12 reps Curl, then rest. | Lateral raise immediately into bicep curl. Shoulders and arms together.', video: 'lateral raise bicep curl superset' },
       { name: 'Modified Burpee (no jump)', sets: 3, reps: '10', rest: '60 sec', note: 'Plank, push-up, stand. Skip the jump for low noise and sweat. Conditioning without explosion.', video: 'modified burpee no jump exercise' },
       { name: 'Plank to Side Plank', sets: 3, reps: '10 each side', rest: '30 sec', note: 'Standard plank, rotate to side plank, return, other side. Core and obliques finisher.', video: 'plank to side plank exercise' },
     ],
@@ -8360,9 +8371,10 @@ function renderExercises() {
       <div class="ex-header" onclick="toggleCard(${i})">
         <div class="ex-num">${i+1}</div>
         <div class="ex-info">
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${ex.name.replace(' SUPERSET', '')}</div>
           <div class="ex-meta">
             <span class="ex-badge sets">${ex.sets}×${ex.reps}</span>
+            ${ex.superset ? `<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset ${ex.superset}</span>` : (ex.name.indexOf('SUPERSET') !== -1 ? '<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset</span>' : '')}
             <span class="ex-badge">rest ${ex.rest}</span>
           </div>
         </div>
@@ -8426,6 +8438,23 @@ function startTicking() {
   timerInterval = setInterval(timerTick, 250);
 }
 
+function minimizeTimer() {
+  document.getElementById('timer-overlay').style.display = 'none';
+  const mini = document.getElementById('mini-timer');
+  if (mini) mini.style.display = 'flex';
+  updateTimerDisplay();
+}
+function expandTimer() {
+  const mini = document.getElementById('mini-timer');
+  if (mini) mini.style.display = 'none';
+  document.getElementById('timer-overlay').style.display = 'flex';
+  updateTimerDisplay();
+}
+function hideMiniTimer() {
+  const mini = document.getElementById('mini-timer');
+  if (mini) mini.style.display = 'none';
+}
+
 function persistTimer() {
   try {
     localStorage.setItem('active_rest_timer', JSON.stringify({
@@ -8458,6 +8487,8 @@ function updateTimerDisplay() {
 }
 
 function updateTimerDisplayVal(remaining) {
+  const miniSecs = document.getElementById('mini-timer-secs');
+  if (miniSecs) miniSecs.textContent = remaining + 's';
   const el = document.getElementById('timer-seconds');
   const ring = document.getElementById('timer-ring');
   if (!el || !ring) return;
@@ -8491,10 +8522,12 @@ function skipTimer() {
   timerEndTime = null;
   clearPersistedTimer();
   document.getElementById('timer-overlay').style.display = 'none';
+  hideMiniTimer();
 }
 
 function timerDone() {
   document.getElementById('timer-overlay').style.display = 'none';
+  hideMiniTimer();
   timerEndTime = null;
   clearPersistedTimer();
   playTimerSound();
