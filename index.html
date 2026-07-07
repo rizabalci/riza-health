@@ -5476,6 +5476,25 @@ function renderPhotoCompare() {
 
 // ── HOME WORKOUTS ─────────────────────────────────────────
 const HOME_WORKOUTS = {
+  'Travel (No Equipment)': {
+    icon: '✈️', focus: 'Full body, zero equipment', duration: '25-35 min',
+    equipment: 'Nothing — just floor space', sweat: 'Medium-High',
+    desc: 'Complete full-body session for a hotel room or anywhere. No weights, no bar, nothing. Do it as a circuit (all exercises back to back, then rest 90 sec and repeat) for a bigger sweat, or straight sets if you prefer. 3-4 rounds.',
+    warmup: ['1 min marching or jogging on the spot', '10 arm circles each direction', '10 bodyweight squats', '10 shoulder rolls'],
+    exercises: [
+      { name: 'Push-up (feet elevated to make harder)', sets: 4, reps: '10-20', rest: '60 sec', note: 'Chest, shoulders, triceps. Too easy? Elevate feet on a chair/bed. Too hard? Hands on a chair (incline). Body straight, elbows ~45 degrees.', video: 'push up proper form variations' },
+      { name: 'Bulgarian Split Squat (rear foot on bed/chair)', sets: 3, reps: '12-15 each leg', rest: '60 sec', note: 'Quads + glutes. Rear foot up on the bed or a chair, drop straight down. This is the best no-weight leg builder. Hold water bottles for extra load.', video: 'bulgarian split squat bodyweight' },
+      { name: 'Pike Push-up', sets: 3, reps: '8-15', rest: '60 sec', note: 'Shoulders. Hips high in an upside-down V, lower the top of your head toward the floor. Replaces overhead press.', video: 'pike push up shoulders' },
+      { name: 'Single-leg Glute Bridge', sets: 3, reps: '15 each leg', rest: '45 sec', note: 'Glutes + hamstrings. On your back, one foot planted, drive hips up and squeeze. Keeps your glute work going while traveling.', video: 'single leg glute bridge' },
+      { name: 'Backpack Row or Towel Row', sets: 3, reps: '12-15', rest: '60 sec', note: 'Back. Fill a backpack with books/water, row it to your hip bent over. Or loop a towel around a door handle and row your bodyweight. The one pulling movement you can improvise.', video: 'backpack row no equipment back' },
+      { name: 'Chair/Bench Dips', sets: 3, reps: '12-20', rest: '45 sec', note: 'Triceps. Hands on a chair or bed edge behind you, feet out front, lower and press. Straighten legs to make it harder.', video: 'bench dips triceps chair' },
+      { name: 'Reverse Lunge', sets: 3, reps: '12 each leg', rest: '45 sec', note: 'Legs + balance. Step back into a lunge, front thigh parallel, push back up. Easier on knees than forward lunges.', video: 'reverse lunge bodyweight' },
+      { name: 'Plank', sets: 3, reps: '45-60 sec', rest: '30 sec', note: 'Core. Forearms down, body dead straight, brace hard. Tap the timer.', video: 'plank core form' },
+      { name: 'Bicycle Crunch', sets: 3, reps: '20 each side', rest: '30 sec', note: 'Abs + obliques. Opposite elbow to opposite knee, slow and controlled. Finisher.', video: 'bicycle crunch abs' },
+    ],
+    cooldown: ['Standing forward fold 45 sec (hamstrings)', 'Doorway chest stretch 30 sec each side', 'Couch stretch 30 sec each leg (hip flexors)', "Child's pose 45 sec"],
+    tip: 'Traveling is not the time to worry about losing gains. A couple of these sessions a week plus staying active (walking, stairs) fully maintains your muscle for weeks. Push-ups and Bulgarian split squats are the two that matter most, do those even if you skip the rest. Keep protein up and you will not lose anything.'
+  },
   'Upper Push': {
     icon: '💪', focus: 'Chest, Shoulders, Triceps', duration: '45-50 min',
     equipment: 'Dumbbells + floor space', sweat: 'Low-Medium',
@@ -8324,6 +8343,10 @@ function renderExercises() {
     const card = document.createElement('div');
     card.className = 'ex-card';
     card.id = `ex-card-${i}`;
+    // Visually mark superset exercises with a colored left border so pairs are obvious
+    if (ex.superset) {
+      card.style.borderLeft = '4px solid #f59e0b';
+    }
     const savedLog = getSavedLog(day.key, i);
     const alreadyLogged = isExerciseLoggedToday(day.key, i);
     if (alreadyLogged) card.classList.add('logged');
