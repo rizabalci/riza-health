@@ -8471,6 +8471,13 @@ function renderExercises() {
           </div>`;
       }
     } else if (hasSets) {
+      setsRows = `
+        <div class="log-header-row">
+          <div class="log-col-label num"></div>
+          <div class="log-col-label">kg</div>
+          <div class="log-col-label">reps</div>
+          <div class="log-col-label done"></div>
+        </div>`;
       for (let s = 1; s <= setsCount; s++) {
         const saved = savedLog[s] || {};
         setsRows += `
