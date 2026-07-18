@@ -3032,6 +3032,17 @@
   </div>
 </div>
 
+<!-- LOG HISTORY (diagnostic) SCREEN -->
+<div class="screen" id="screen-loghistory">
+  <div style="padding:0 0 120px">
+    <div style="padding:20px 16px 12px">
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.3px">📊 Log History</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;line-height:1.5">Everything you have logged, newest first. This is the raw data behind the "Last time" and "Best ever" references.</div>
+    </div>
+    <div id="loghistory-content" style="padding:0 16px"></div>
+  </div>
+</div>
+
 <!-- EATING OUT SCREEN -->
 
 <div class="screen" id="screen-eatout">
@@ -3096,6 +3107,7 @@
     <div onclick="switchTabAndClose('mobility')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🤸</span><span style="font-size:13px;font-weight:500">Mobility & Flexibility</span></div>
     <div onclick="switchTabAndClose('calisthenics')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🤾</span><span style="font-size:13px;font-weight:500">Calisthenics</span></div>
     <div onclick="switchTabAndClose('fertility')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🌱</span><span style="font-size:13px;font-weight:500">Fertility & Sperm Quality</span></div>
+    <div onclick="switchTabAndClose('loghistory')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>📊</span><span style="font-size:13px;font-weight:500">Log History</span></div>
     <div onclick="switchTabAndClose('projection')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>📉</span><span style="font-size:13px;font-weight:500">Weight Projection</span></div>
     <div onclick="switchTabAndClose('shopping')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🛒</span><span style="font-size:13px;font-weight:500">Shopping List</span></div>
     <div onclick="switchTabAndClose('sauna')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🧖</span><span style="font-size:13px;font-weight:500">Sauna</span></div>
@@ -3347,6 +3359,7 @@ function switchTab(name) {
     mobility: initMobility,
     calisthenics: initCalisthenics,
     fertility: initFertility,
+    loghistory: initLogHistory,
   };
   const fn = inits[name];
   if (typeof fn === 'function') {
@@ -4429,6 +4442,75 @@ function toggleCaliDone(id) {
 function initCalisthenics() { renderCalisthenics(); }
 
 function initFertility() { renderFertility(); }
+
+function initLogHistory() { renderLogHistory(); }
+function renderLogHistory() {
+  const c = document.getElementById('loghistory-content');
+  if (!c) return;
+  // Gather every workout log key in storage
+  const rows = [];
+  for (let k in localStorage) {
+    if (!k.startsWith('log_') && !k.startsWith('logn_')) continue;
+    const parts = k.split('_');
+    const date = parts[parts.length - 1];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    const dayKey = parts[1];
+    const who = k.startsWith('logn_') ? parts.slice(2, -1).join('_') : ('position #' + parts[2]);
+    let sets = [];
+    let isDur = false;
+    try {
+      const log = JSON.parse(localStorage.getItem(k));
+      if (log && log.duration) {
+        isDur = true;
+        const bits = [];
+        if (log.mins) bits.push(log.mins + ' min');
+        if (log.level) bits.push('lvl ' + log.level);
+        sets = bits;
+      } else {
+        Object.keys(log).sort((a,b)=>a-b).forEach(s => {
+          const st = log[s];
+          if (!st) return;
+          const kg = (st.kg !== undefined && st.kg !== '') ? st.kg : null;
+          const rp = (st.reps !== undefined && st.reps !== '') ? st.reps : null;
+          if (kg === null && rp === null) { if (st.done) sets.push('done'); return; }
+          if (kg !== null && rp !== null) sets.push(kg + 'kg×' + rp);
+          else if (kg !== null) sets.push(kg + 'kg');
+          else sets.push(rp + ' reps');
+        });
+      }
+    } catch(e) {}
+    if (sets.length === 0) continue;
+    rows.push({ date, dayKey, who, sets, isDur, key: k });
+  }
+  if (rows.length === 0) {
+    c.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:13px;color:var(--text2);line-height:1.6">
+      <strong style="color:var(--text)">No logged workouts found yet.</strong><br><br>
+      This is why "Last time" and "Best ever" are not showing: there is no saved data to read.<br><br>
+      To fix it: open an exercise (tap the card so it expands), type your weight and reps into the boxes for each set, then tap <strong>Save Sets</strong>. Once you have logged on one day, the reference will appear the next time you open that exercise.
+    </div>`;
+    return;
+  }
+  rows.sort((a,b) => b.date.localeCompare(a.date));
+  // group by date
+  const byDate = {};
+  rows.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rows.length} logged exercises across ${Object.keys(byDate).length} days</div>`;
+  Object.keys(byDate).sort().reverse().forEach(date => {
+    const d = new Date(date + 'T12:00:00');
+    const label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    html += `<div style="font-size:13px;font-weight:700;color:var(--accent);margin:16px 0 8px">${label}</div>`;
+    byDate[date].forEach(r => {
+      html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+          <div style="font-size:13px;font-weight:600">${r.who.replace(/-/g, ' ')}</div>
+          <div style="font-size:11px;color:var(--text3)">${r.dayKey}</div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">${r.sets.join('  ·  ')}</div>
+      </div>`;
+    });
+  });
+  c.innerHTML = html;
+}
 function renderFertility() {
   const c = document.getElementById('fertility-content');
   if (!c) return;
@@ -6714,7 +6796,7 @@ function quickAddFromGuide(name, dose, timing) {
 const DEFAULT_SUPPS = [
   // ===== DAILY CORE =====
   { cat: 'core', name: 'Vitamin D3 + K2', dose: '4 drops (or 1× 20.000 Depot tab every 5 days)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'PRIORITY #1. You have drops + D3 20.000 Depot (take Depot 1x/week instead of daily if using that one).' },
-  { cat: 'noot', name: 'Zinc Bisglycinate', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'optional', notes: 'SITUATIONAL: when sick, run down, or diet light on meat. Your meat-heavy diet usually covers zinc. Skip on ZMA nights.' },
+  { cat: 'core', name: 'Zinc Bisglycinate', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'daily', notes: 'DAILY for sperm quality + testosterone. Zinc is one of the most important minerals for sperm production and count. Take through your fertility push (~90-day sperm cycle). Skip on ZMA nights (ZMA already has zinc). Well-tolerated long-term at this dose.' },
   { cat: 'core', name: 'Magnesium Glycinate', dose: '2-3 caps', timing: 'Evening before bed', cycle: 'daily', notes: 'NaturElan big bottle. Skip on nights you take ZMA or Magtein.' },
   { cat: 'core', name: 'Omega-3 / Krill Oil', dose: '2-3 fish oil caps OR 2 krill caps', timing: 'Morning with breakfast', cycle: 'daily', notes: 'Only on days you do NOT eat fish. Your meal plan has salmon ~4x/week — skip Omega-3 those days. WeightWorld Fish Oil + Bandini Krill.' },
   { cat: 'core', name: 'Creatine Monohydrate', dose: '1 scoop (5g)', timing: 'Morning with breakfast', cycle: 'daily', notes: 'BioTechUSA 300g. Every day including rest days.' },
@@ -6722,8 +6804,6 @@ const DEFAULT_SUPPS = [
   { cat: 'noot', name: 'Probiotic', dose: '1-2 caps', timing: 'Morning empty stomach', cycle: 'optional', notes: 'SITUATIONAL ONLY: after antibiotics, travel (different food/water), stomach upset, or bloating. Healthy gut needs no daily probiotic — your skyr + fiber do the job. Use up open bottle, do not rebuy.' },
   { cat: 'noot', name: 'Vitamin C Liposomal', dose: '1-2 caps', timing: 'Morning with breakfast', cycle: 'optional', notes: 'SITUATIONAL: when sick or run down. Your diet (peppers, fruit, potatoes) already covers vitamin C — daily capsules add nothing.' },
   // ===== TRAINING DAYS =====
-  { cat: 'training', name: 'Pre-Workout (ON Gold Standard)', dose: '1 shot', timing: 'Morning, 20-30 min pre-workout', cycle: 'training', notes: 'PICK ONE STIMULANT ONLY. This pre-workout already contains caffeine AND citrulline — so if you take this, SKIP the separate Caffeine tab and Citrulline powder. Taking all three is double-dosing. Cutoff 13:00.', rebuy: true, gymEssential: true },
-  { cat: 'training', name: 'Caffeine (GymBeam)', dose: '1 tab (200mg)', timing: 'Morning pre-workout', cycle: 'training', notes: 'USE INSTEAD OF the pre-workout, never on top of it. Good for lighter days when you want a clean stim without the full pre-workout. 5on/2off. Cutoff 13:00.', rebuy: true, gymEssential: true },
   { cat: 'training', name: 'Citrulline Malate 2:1', dose: '1.5-2 tsp powder (6-8g)', timing: 'Morning, 30-45 min pre-workout', cycle: 'training', notes: 'ONLY NEEDED if you take plain caffeine (not the pre-workout). The pre-workout already has citrulline. Pump aid, modest evidence. Use up the powder, then no need to rebuy separately.', rebuy: false },
   { cat: 'training', name: 'Whey Protein (ESN Designer)', dose: '1 scoop', timing: 'Morning post-workout', cycle: 'training', notes: 'Only when food protein falls short of 190g target.', gymEssential: true },
   { cat: 'training', name: 'L-Glutamine', dose: '1 scoop / 1 level tsp (5g)', timing: 'Morning post-workout', cycle: 'training', notes: '❌ DON\'T REBUY. At 190g daily protein this adds essentially nothing — the evidence for glutamine in healthy lifters is weak. Finish the bottle, then drop it.', rebuy: false },
@@ -6731,12 +6811,12 @@ const DEFAULT_SUPPS = [
   { cat: 'training', name: 'L-Carnitine', dose: '1 measuring cap liquid (~25ml) OR 2 tabs', timing: 'Morning before fasted walk/cardio', cycle: 'training', notes: '❌ DON\'T REBUY. The fat-loss evidence is weak in humans. Your deficit and step count do the real work. Use up what you have, then drop.', rebuy: false },
   { cat: 'training', name: 'MCT C8 Oil', dose: '1 tbsp (start with 1 tsp)', timing: 'Morning coffee', cycle: 'optional', notes: 'BrainEffect C8. Clean ketone energy + appetite control. ~100 kcal/tbsp — counts toward your 2500 daily. Too much too fast = stomach upset. Great in black morning coffee.' },
   // ===== T-ROTATION BLOCK A (8 weeks) =====
-  { cat: 'rotA', name: 'Ashwagandha KSM-66', dose: '1 cap (500mg KSM-66)', timing: 'Evening with dinner', cycle: 'rotation', notes: 'BLOCK A. Cortisol killer — your #1 priority. Bulk 500mg KSM-66 caps.' },
+  { cat: 'core', name: 'Ashwagandha KSM-66', dose: '1 cap (500mg KSM-66)', timing: 'Evening with dinner', cycle: 'daily', notes: 'DAILY. Your best-evidence adaptogen: lowers cortisol (stress), supports testosterone, aids sleep and recovery. Take with dinner. Some people cycle it (e.g. 8 weeks on, 2 off) but daily use is well-tolerated. Pairs well with your fertility/libido focus.' },
   { cat: 'rotA', name: 'D-Aspartic Acid (DAA)', dose: '1 level tsp powder (3g)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK A. GymBeam 250g. Stimulates LH. Works best in first 2-4 weeks.', rebuy: false },
   // ===== T-ROTATION BLOCK B (8 weeks) =====
   { cat: 'core', name: 'Tongkat Ali (Red or Black)', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'daily', notes: 'DAILY (morning only — can affect sleep if late). Best-evidence libido + stress herb you own. You have Red + Black (Herbs by Sonja), use one at a time. Hard to buy in Austria (EU novel-food rules), so use what you have consistently. Consider a short break every ~2 months.' },
   { cat: 'core', name: 'Maca', dose: '2-3 caps', timing: 'Morning', cycle: 'daily', notes: 'DAILY. AAVALABS Maca Complex or Helden Kraft. You personally respond well to it (noticeably more libido on daily use). Effect builds with consistent daily dosing, not occasional. Safe long-term, it is a food (root vegetable).' },
-  { cat: 'rotB', name: 'Fadogia Agrestis ⚠️', dose: '1 cap MAX (500mg)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK B. ⚠️ CAUTION: limited human safety data, animal studies show testicular toxicity at high doses. Max 4 weeks within the block, then stop. Never run continuously.' },
+  { cat: 'avoid', name: 'Fadogia Agrestis ⚠️ (NOT USING)', dose: '-', timing: '-', cycle: 'avoid', notes: '⛔ NOT RECOMMENDED — especially while fertility is a goal. Animal studies show testicular toxicity, and there is almost no human safety data. It works against sperm quality, the opposite of what you want right now. Kept here only so you know NOT to take it. Do not use.', rebuy: false },
   // ===== T-ROTATION BLOCK C (8 weeks) =====
   { cat: 'rotC', name: 'Tribulus Max 95%', dose: '1-2 caps (NOT the full 6-cap serving)', timing: 'Morning with breakfast', cycle: 'rotation', notes: 'BLOCK C. GEN 95% saponins. Libido more than T. Start low.', rebuy: false },
   { cat: 'core', name: 'Shilajit', dose: '1 cap', timing: 'Morning with breakfast', cycle: 'daily', notes: 'DAILY. Fulvic acid + minerals + modest T/energy evidence. ⚠️ CHECK YOUR BRAND: only take daily if it is PURIFIED and third-party/heavy-metal tested. Raw or cheap resin can contain lead/arsenic. If unsure of quality, verify before daily long-term use. Stick to label dose, never megadose. You have 2 brands, finish the tested one.' },
@@ -6757,7 +6837,7 @@ const DEFAULT_SUPPS = [
 function getSupplements() {
   // v2 stack migration: force-replace with categorized full stack (preserves user-added customs)
   const version = localStorage.getItem('supp_stack_version');
-  if (version !== '10') {
+  if (version !== '13') {
     const saved = localStorage.getItem('supplements');
     let customs = [];
     if (saved) {
@@ -6769,7 +6849,7 @@ function getSupplements() {
     }
     const newStack = [...DEFAULT_SUPPS, ...customs];
     localStorage.setItem('supplements', JSON.stringify(newStack));
-    localStorage.setItem('supp_stack_version', '10');
+    localStorage.setItem('supp_stack_version', '13');
     localStorage.setItem('trot_block', 'A');
     localStorage.setItem('trot_start', new Date().toISOString().split('T')[0]);
     // Initialize rotation if not set
@@ -7945,18 +8025,23 @@ function getSavedLog(dayKey, exIdx) {
 function getLastTimeLog(dayKey, exIdx) {
   const today = new Date().toISOString().split('T')[0];
   const slug = exSlug(exNameFor(dayKey, exIdx));
-  const prefixes = [`logn_${dayKey}_${slug}_`, `log_${dayKey}_${exIdx}_`];
+  // Match new name-based keys for this day, OR any legacy index key on this day.
+  // Legacy keys are matched then verified they aren't a different exercise by falling back gracefully.
+  const namePrefix = `logn_${dayKey}_${slug}_`;
+  const legacyPrefix = `log_${dayKey}_${exIdx}_`;
   let bestDate = null, bestLog = null;
   for (let k in localStorage) {
-    let matched = null;
-    for (const p of prefixes) { if (k.startsWith(p)) { matched = p; break; } }
-    if (!matched) continue;
-    const date = k.slice(matched.length);
-    if (date >= today) continue; // skip today and anything future
+    let isName = k.startsWith(namePrefix);
+    let isLegacy = k.startsWith(legacyPrefix);
+    if (!isName && !isLegacy) continue;
+    const date = k.slice(isName ? namePrefix.length : legacyPrefix.length);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    if (date >= today) continue; // skip today and future
     try {
       const log = JSON.parse(localStorage.getItem(k));
       const hasData = Object.values(log).some(s => s && (s.kg || s.reps));
       if (!hasData) continue;
+      // prefer name-based match over legacy if same date
       if (!bestDate || date > bestDate) { bestDate = date; bestLog = log; }
     } catch(e) {}
   }
