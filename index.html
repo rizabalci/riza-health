@@ -8493,8 +8493,17 @@ function renderExercises() {
     const videoSection = ex.video ?
       `<a class="ex-yt-btn" href="${videoUrl(ex.video)}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:#FF0000;border-radius:8px;text-decoration:none;margin:12px 16px 4px">
         <span style="font-size:16px;color:#fff">▶</span>
-        <span style="font-size:13px;font-weight:500;color:#fff">${isDirectVideo(ex.video) ? 'Watch form video on YouTube' : 'Search form tutorial on YouTube'}</span>
-      </a>` : '';
+        <span style="font-size:13px;font-weight:500;color:#fff">${ex.superset ? ex.name : (isDirectVideo(ex.video) ? 'Watch form video on YouTube' : 'Search form tutorial on YouTube')}</span>
+      </a>${(() => {
+        // On a superset card, also show the paired exercise's video so both are here together
+        if (!ex.superset) return '';
+        const p = supersetPartner(day, i);
+        if (!p || !p.video) return '';
+        return `<a class="ex-yt-btn" href="${videoUrl(p.video)}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:#FF0000;border-radius:8px;text-decoration:none;margin:6px 16px 4px;opacity:0.92">
+          <span style="font-size:16px;color:#fff">▶</span>
+          <span style="font-size:13px;font-weight:500;color:#fff">${p.name} (superset partner)</span>
+        </a>`;
+      })()}` : '';
 
     // Last-time reference (progressive overload) + all-time best (PR)
     let lastTimeHtml = '';
@@ -8521,7 +8530,7 @@ function renderExercises() {
           <div class="ex-name">${ex.name.replace(' SUPERSET', '')}</div>
           <div class="ex-meta">
             <span class="ex-badge sets">${ex.sets}×${ex.reps}</span>
-            ${ex.superset ? `<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset ${ex.superset}</span>` : (ex.name.indexOf('SUPERSET') !== -1 ? '<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset</span>' : '')}
+            ${ex.superset ? `<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset with ${supersetPartnerName(day, i)}</span>` : (ex.name.indexOf('SUPERSET') !== -1 ? '<span class="ex-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:#f59e0b">⚡ superset</span>' : '')}
             <span class="ex-badge">rest ${ex.rest}</span>
           </div>
         </div>
@@ -8846,6 +8855,25 @@ function isActivityItem(ex) {
 
 // Timed isometric holds (plank, side plank, hollow hold, dead hang, L-sit, wall sit):
 // these are held for time, not lifted for reps — so log with a timer + done, not kg/reps.
+// Find the other exercise sharing this superset letter (the paired movement).
+function supersetPartner(day, idx) {
+  const me = day.exercises[idx];
+  if (!me || !me.superset) return null;
+  for (let j = 0; j < day.exercises.length; j++) {
+    if (j === idx) continue;
+    const other = day.exercises[j];
+    if (other && other.superset === me.superset) {
+      const swap = (typeof getSessionSwap === 'function') ? getSessionSwap(day.key, j) : null;
+      return swap ? Object.assign({}, other, { name: swap.name, video: swap.name }) : other;
+    }
+  }
+  return null;
+}
+function supersetPartnerName(day, idx) {
+  const p = supersetPartner(day, idx);
+  return p ? p.name : '';
+}
+
 function isTimedHold(ex) {
   const n = (ex.name || '').toLowerCase();
   const r = (ex.reps || '').toLowerCase();
