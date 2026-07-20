@@ -739,6 +739,9 @@
     </div>
     <div class="day-picker" id="day-picker"></div>
 
+    <!-- GYM SESSION TIMER -->
+    <div id="session-timer-bar" style="margin:0 10px 12px"></div>
+
     <!-- WARM-UP SECTION -->
     <div id="warmup-section"></div>
 
@@ -8418,6 +8421,7 @@ function isDirectVideo(query) {
 
 function renderExercises() {
   renderWarmup();
+  renderSessionTimer();
   const day = DAYS[currentDay];
   const list = document.getElementById('exercise-list');
   list.innerHTML = '';
@@ -8872,6 +8876,85 @@ function supersetPartner(day, idx) {
 function supersetPartnerName(day, idx) {
   const p = supersetPartner(day, idx);
   return p ? p.name : '';
+}
+
+// ---- Gym session timer: track how long you were actually in the gym ----
+function sessionKey() {
+  return 'gymsession_' + new Date().toISOString().split('T')[0];
+}
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(sessionKey())) || null; } catch(e) { return null; }
+}
+function startGymSession() {
+  const s = { start: Date.now(), end: null };
+  localStorage.setItem(sessionKey(), JSON.stringify(s));
+  renderSessionTimer();
+  showToast('Session started');
+}
+function stopGymSession() {
+  const s = getSession();
+  if (!s || !s.start) return;
+  s.end = Date.now();
+  localStorage.setItem(sessionKey(), JSON.stringify(s));
+  renderSessionTimer();
+  const mins = Math.round((s.end - s.start) / 60000);
+  showToast('Session: ' + mins + ' min');
+}
+function resetGymSession() {
+  localStorage.removeItem(sessionKey());
+  renderSessionTimer();
+}
+function fmtDur(ms) {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  return h > 0 ? (h + 'h ' + m + 'm') : (m + ' min');
+}
+let sessionTicker = null;
+function renderSessionTimer() {
+  const el = document.getElementById('session-timer-bar');
+  if (!el) return;
+  const s = getSession();
+  if (sessionTicker) { clearInterval(sessionTicker); sessionTicker = null; }
+
+  if (!s || !s.start) {
+    el.innerHTML = `<div onclick="startGymSession()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:var(--surface);border:1px dashed var(--border);border-radius:10px;cursor:pointer;touch-action:manipulation">
+      <span style="font-size:15px">⏱</span><span style="font-size:13px;font-weight:600;color:var(--text2)">Start gym session</span>
+    </div>`;
+    return;
+  }
+  if (s.end) {
+    const mins = Math.round((s.end - s.start) / 60000);
+    const st = new Date(s.start), en = new Date(s.end);
+    const t = d => d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 13px;background:var(--surface);border:1px solid #22c55e;border-radius:10px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#22c55e">✓ Session ${mins} min</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${t(st)} to ${t(en)}</div>
+      </div>
+      <div onclick="resetGymSession()" style="font-size:11px;color:var(--text3);cursor:pointer;touch-action:manipulation;padding:6px">reset</div>
+    </div>`;
+    return;
+  }
+  // running
+  const paint = () => {
+    const el2 = document.getElementById('session-timer-bar');
+    if (!el2) return;
+    const cur = getSession();
+    if (!cur || !cur.start || cur.end) return;
+    const elapsed = Date.now() - cur.start;
+    const st = new Date(cur.start);
+    const t = d => d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 13px;background:var(--surface);border:1px solid var(--accent);border-radius:10px">
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--accent)">⏱ ${fmtDur(elapsed)} in gym</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">started ${t(st)}</div>
+      </div>
+      <div onclick="stopGymSession()" style="font-size:12px;font-weight:700;color:#000;background:var(--accent);border-radius:8px;padding:8px 12px;cursor:pointer;touch-action:manipulation">Finish</div>
+    </div>`;
+  };
+  paint();
+  sessionTicker = setInterval(paint, 30000);
 }
 
 function isTimedHold(ex) {
