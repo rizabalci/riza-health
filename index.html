@@ -3035,6 +3035,17 @@
   </div>
 </div>
 
+<!-- BACKUP & RESTORE SCREEN -->
+<div class="screen" id="screen-backup">
+  <div style="padding:0 0 120px">
+    <div style="padding:20px 16px 12px">
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.3px">💾 Backup & Restore</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;line-height:1.5">Save all your logs, weights, photos and settings as text. Do this BEFORE deleting the home screen app, then paste it back afterwards to restore everything.</div>
+    </div>
+    <div id="backup-content" style="padding:0 16px"></div>
+  </div>
+</div>
+
 <!-- LOG HISTORY (diagnostic) SCREEN -->
 <div class="screen" id="screen-loghistory">
   <div style="padding:0 0 120px">
@@ -3111,6 +3122,7 @@
     <div onclick="switchTabAndClose('calisthenics')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🤾</span><span style="font-size:13px;font-weight:500">Calisthenics</span></div>
     <div onclick="switchTabAndClose('fertility')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🌱</span><span style="font-size:13px;font-weight:500">Fertility & Sperm Quality</span></div>
     <div onclick="switchTabAndClose('loghistory')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>📊</span><span style="font-size:13px;font-weight:500">Log History</span></div>
+    <div onclick="switchTabAndClose('backup')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>💾</span><span style="font-size:13px;font-weight:500">Backup & Restore</span></div>
     <div onclick="switchTabAndClose('projection')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>📉</span><span style="font-size:13px;font-weight:500">Weight Projection</span></div>
     <div onclick="switchTabAndClose('shopping')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🛒</span><span style="font-size:13px;font-weight:500">Shopping List</span></div>
     <div onclick="switchTabAndClose('sauna')" style="padding:12px;background:var(--surface2);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:manipulation"><span>🧖</span><span style="font-size:13px;font-weight:500">Sauna</span></div>
@@ -3363,6 +3375,7 @@ function switchTab(name) {
     calisthenics: initCalisthenics,
     fertility: initFertility,
     loghistory: initLogHistory,
+    backup: initBackup,
   };
   const fn = inits[name];
   if (typeof fn === 'function') {
@@ -4447,6 +4460,88 @@ function initCalisthenics() { renderCalisthenics(); }
 function initFertility() { renderFertility(); }
 
 function initLogHistory() { renderLogHistory(); }
+
+// ---- Backup & Restore: export everything to text, import it back ----
+function buildBackup() {
+  const data = {};
+  for (let k in localStorage) {
+    if (!Object.prototype.hasOwnProperty.call(localStorage, k)) continue;
+    try { data[k] = localStorage.getItem(k); } catch(e) {}
+  }
+  return JSON.stringify({ v: 1, saved: new Date().toISOString(), data });
+}
+function initBackup() { renderBackup(); }
+function renderBackup() {
+  const c = document.getElementById('backup-content');
+  if (!c) return;
+  let keyCount = 0, logCount = 0;
+  for (let k in localStorage) {
+    if (!Object.prototype.hasOwnProperty.call(localStorage, k)) continue;
+    keyCount++;
+    if (k.startsWith('log_') || k.startsWith('logn_')) logCount++;
+  }
+  c.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Currently stored on this device</div>
+      <div style="font-size:12px;color:var(--text2)">${keyCount} saved items, including ${logCount} workout logs</div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--accent);margin:14px 0 8px">1. Back up (do this first)</div>
+    <div onclick="doExportBackup()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--accent);color:#000;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;touch-action:manipulation">📤 Create backup</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Creates the text below. Tap Copy, then paste it somewhere safe: Notes, an email to yourself, or WhatsApp to yourself.</div>
+    <textarea id="backup-out" readonly placeholder="Your backup text will appear here" style="width:100%;min-height:110px;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;font-family:monospace;-webkit-user-select:text;user-select:text"></textarea>
+    <div onclick="copyBackup()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;touch-action:manipulation">📋 Copy backup text</div>
+
+    <div style="font-size:13px;font-weight:700;color:#22c55e;margin:22px 0 8px">2. Restore (after reinstalling)</div>
+    <textarea id="backup-in" placeholder="Paste your backup text here" style="width:100%;min-height:110px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;font-family:monospace"></textarea>
+    <div onclick="doImportBackup()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#22c55e;color:#000;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-top:8px;touch-action:manipulation">📥 Restore from backup</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">This adds the backed-up data back. Existing entries with the same name are overwritten.</div>
+
+    <div style="font-size:11px;color:var(--text3);line-height:1.6;margin-top:20px;padding:12px;background:var(--surface2);border-radius:8px">
+      <strong style="color:var(--text)">Safe way to update the home screen app:</strong><br>
+      1. Open this screen in the home screen app and tap Create backup, then Copy.<br>
+      2. Paste it into Notes so it is saved.<br>
+      3. Delete the home screen icon and re-add it from Safari.<br>
+      4. Open this screen again, paste the text into Restore, tap Restore.<br>
+      Your logs come back and you are on the new version.
+    </div>`;
+}
+function doExportBackup() {
+  const out = document.getElementById('backup-out');
+  if (!out) return;
+  out.value = buildBackup();
+  showToast('Backup created');
+}
+function copyBackup() {
+  const out = document.getElementById('backup-out');
+  if (!out || !out.value) { showToast('Tap Create backup first'); return; }
+  out.select();
+  out.setSelectionRange(0, 999999);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(out.value).then(() => showToast('Copied'), () => showToast('Select the text and copy manually'));
+    } else {
+      document.execCommand('copy');
+      showToast('Copied');
+    }
+  } catch(e) { showToast('Select the text and copy manually'); }
+}
+function doImportBackup() {
+  const inp = document.getElementById('backup-in');
+  if (!inp || !inp.value.trim()) { showToast('Paste your backup text first'); return; }
+  let parsed;
+  try { parsed = JSON.parse(inp.value.trim()); } catch(e) { showToast('That does not look like a valid backup'); return; }
+  const data = parsed && parsed.data ? parsed.data : null;
+  if (!data || typeof data !== 'object') { showToast('Backup file is not readable'); return; }
+  let n = 0;
+  for (let k in data) {
+    if (!Object.prototype.hasOwnProperty.call(data, k)) continue;
+    try { localStorage.setItem(k, data[k]); n++; } catch(e) {}
+  }
+  showToast('Restored ' + n + ' items');
+  setTimeout(() => location.reload(), 900);
+}
+
 function renderLogHistory() {
   const c = document.getElementById('loghistory-content');
   if (!c) return;
