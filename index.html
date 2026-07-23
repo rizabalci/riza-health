@@ -748,6 +748,9 @@
     <!-- DAILY SUPPLEMENT SUMMARY -->
     <div id="home-supp-card" style="margin:0 10px 12px"></div>
 
+    <!-- DAILY MEAL PLAN -->
+    <div id="home-meal-card" style="margin:0 10px 12px"></div>
+
     <!-- DAILY POSTURE FIX -->
     <div style="margin:0 10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px">
       <div style="font-size:13px;font-weight:700;margin-bottom:8px">🧍 Daily Posture Fix <span style="font-size:11px;color:var(--muted);font-weight:500">(do anywhere, every day)</span></div>
@@ -876,6 +879,7 @@
       </div>
 
       <div class="meal-section-title">Meal Plan</div>
+      <div style="font-size:11px;color:var(--text3);padding:0 16px 10px;line-height:1.5">Cut target: about 2500 kcal and 190g protein, roughly 500 below maintenance for ~0.5kg a week. Swap proteins freely as long as the grams hold.</div>
 
       <div class="meal-card">
         <div class="meal-header">
@@ -883,19 +887,18 @@
             <div class="meal-name">Breakfast</div>
             <div class="meal-time">08:00</div>
           </div>
-          <div class="meal-kcal">~700 kcal</div>
+          <div class="meal-kcal">~640 kcal</div>
         </div>
         <div class="meal-items">
-          <div class="meal-item">4 eggs (any style)</div>
-          <div class="meal-item">50g oats (dry) with milk or water</div>
-          <div class="meal-item">1 banana</div>
-          <div class="meal-item">30g almonds</div>
-          <div class="meal-item">1 coffee</div>
+          <div class="meal-item">3 whole eggs + 3 egg whites</div>
+          <div class="meal-item">80g oats (dry)</div>
+          <div class="meal-item">150g berries</div>
+          <div class="meal-item">Coffee</div>
         </div>
         <div class="meal-macros">
-          <span class="meal-macro-chip p">P: 50g</span>
+          <span class="meal-macro-chip p">P: 39g</span>
           <span class="meal-macro-chip c">C: 70g</span>
-          <span class="meal-macro-chip f">F: 25g</span>
+          <span class="meal-macro-chip f">F: 20g</span>
         </div>
       </div>
 
@@ -905,17 +908,37 @@
             <div class="meal-name">Lunch</div>
             <div class="meal-time">13:00</div>
           </div>
-          <div class="meal-kcal">~800 kcal</div>
+          <div class="meal-kcal">~740 kcal</div>
         </div>
         <div class="meal-items">
-          <div class="meal-item">180-200g chicken breast or turkey</div>
-          <div class="meal-item">100g rice or bulgur (dry)</div>
-          <div class="meal-item">Large salad + 1 tbsp olive oil</div>
+          <div class="meal-item">180g salmon (or chicken on non-salmon days)</div>
+          <div class="meal-item">60g rice (dry)</div>
+          <div class="meal-item">Large portion of vegetables</div>
+          <div class="meal-item">1 tbsp olive oil</div>
         </div>
         <div class="meal-macros">
-          <span class="meal-macro-chip p">P: 60g</span>
-          <span class="meal-macro-chip c">C: 85g</span>
-          <span class="meal-macro-chip f">F: 20g</span>
+          <span class="meal-macro-chip p">P: 45g</span>
+          <span class="meal-macro-chip c">C: 55g</span>
+          <span class="meal-macro-chip f">F: 32g</span>
+        </div>
+      </div>
+
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-name">Around training</div>
+            <div class="meal-time">post-workout</div>
+          </div>
+          <div class="meal-kcal">~225 kcal</div>
+        </div>
+        <div class="meal-items">
+          <div class="meal-item">Whey shake</div>
+          <div class="meal-item">1 banana</div>
+        </div>
+        <div class="meal-macros">
+          <span class="meal-macro-chip p">P: 25g</span>
+          <span class="meal-macro-chip c">C: 28g</span>
+          <span class="meal-macro-chip f">F: 2g</span>
         </div>
       </div>
 
@@ -925,18 +948,36 @@
             <div class="meal-name">Dinner</div>
             <div class="meal-time">19:30</div>
           </div>
-          <div class="meal-kcal">~1000 kcal</div>
+          <div class="meal-kcal">~760 kcal</div>
         </div>
         <div class="meal-items">
-          <div class="meal-item">200-220g salmon, beef, or chicken thigh</div>
-          <div class="meal-item">200g potatoes or 100g rice</div>
-          <div class="meal-item">Vegetables (roasted or steamed)</div>
-          <div class="meal-item">Salad</div>
+          <div class="meal-item">200g lean beef or turkey</div>
+          <div class="meal-item">300g potatoes</div>
+          <div class="meal-item">Big salad with oil and vinegar</div>
         </div>
         <div class="meal-macros">
-          <span class="meal-macro-chip p">P: 70g</span>
-          <span class="meal-macro-chip c">C: 95g</span>
-          <span class="meal-macro-chip f">F: 30g</span>
+          <span class="meal-macro-chip p">P: 51g</span>
+          <span class="meal-macro-chip c">C: 60g</span>
+          <span class="meal-macro-chip f">F: 28g</span>
+        </div>
+      </div>
+
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-name">Evening</div>
+            <div class="meal-time">21:30</div>
+          </div>
+          <div class="meal-kcal">~235 kcal</div>
+        </div>
+        <div class="meal-items">
+          <div class="meal-item">200g skyr</div>
+          <div class="meal-item">20g almonds</div>
+        </div>
+        <div class="meal-macros">
+          <span class="meal-macro-chip p">P: 26g</span>
+          <span class="meal-macro-chip c">C: 10g</span>
+          <span class="meal-macro-chip f">F: 12g</span>
         </div>
       </div>
 
@@ -7154,6 +7195,7 @@ function renderSuppToday() {
 function refreshAllSuppViews() {
   if (typeof renderSuppToday === 'function') { try { renderSuppToday(); } catch(e){} }
   if (typeof renderHomeSuppCard === 'function') { try { renderHomeSuppCard(); } catch(e){} }
+  if (typeof renderHomeMealCard === 'function') { try { renderHomeMealCard(); } catch(e){} }
   if (typeof renderSuppSchedule === 'function') { try { renderSuppSchedule(); } catch(e){} }
   if (typeof renderSuppStack === 'function') { try { renderSuppStack(); } catch(e){} }
   if (typeof renderSuppAdherence === 'function') { try { renderSuppAdherence(); } catch(e){} }
@@ -7285,6 +7327,58 @@ function getTodaySupps() {
 }
 
 // ── HOME SCREEN SUPPLEMENT CARD ────────────────────────────
+const MEAL_PLAN = [
+  { name: 'Breakfast', time: '08:00', kcal: 640, p: 39, items: '3 whole eggs + 3 whites, 80g oats, 150g berries' },
+  { name: 'Lunch', time: '13:00', kcal: 740, p: 45, items: '180g salmon or chicken, 60g rice, veg, 1 tbsp olive oil' },
+  { name: 'Around training', time: 'post-workout', kcal: 225, p: 25, items: 'Whey shake + banana' },
+  { name: 'Dinner', time: '19:30', kcal: 760, p: 51, items: '200g beef or turkey, 300g potatoes, big salad' },
+  { name: 'Evening', time: '21:30', kcal: 235, p: 26, items: '200g skyr, 20g almonds' },
+];
+function getMealDoneKey() { return 'meals_done_' + getTodayKey(); }
+function getMealsDone() { try { return JSON.parse(localStorage.getItem(getMealDoneKey()) || '{}'); } catch(e) { return {}; } }
+function toggleMealDone(i) {
+  const d = getMealsDone();
+  d[i] = !d[i];
+  localStorage.setItem(getMealDoneKey(), JSON.stringify(d));
+  renderHomeMealCard();
+}
+function renderHomeMealCard() {
+  const card = document.getElementById('home-meal-card');
+  if (!card) return;
+  const done = getMealsDone();
+  const doneCount = MEAL_PLAN.filter((m, i) => done[i]).length;
+  const kcalDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.kcal : 0), 0);
+  const pDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.p : 0), 0);
+  const open = localStorage.getItem('home_meal_open') === '1';
+  card.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div onclick="toggleHomeMealCard()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;touch-action:manipulation">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px">🍽</span>
+          <span style="font-size:13px;font-weight:700">Meals</span>
+          <span style="font-size:11px;color:var(--text3)">${doneCount}/${MEAL_PLAN.length} · ${kcalDone} kcal · ${pDone}g protein</span>
+        </div>
+        <span style="font-size:12px;color:var(--text3)">${open ? '▴' : '▾'}</span>
+      </div>
+      ${open ? `<div style="padding:0 12px 12px">
+        ${MEAL_PLAN.map((m, i) => `
+          <div onclick="toggleMealDone(${i})" style="display:flex;gap:10px;align-items:flex-start;padding:9px 10px;margin-bottom:6px;background:var(--surface2);border-radius:8px;cursor:pointer;touch-action:manipulation;opacity:${done[i] ? 0.55 : 1}">
+            <div style="width:19px;height:19px;flex-shrink:0;border-radius:5px;border:1.5px solid ${done[i] ? 'var(--accent)' : 'var(--border)'};background:${done[i] ? 'var(--accent)' : 'transparent'};color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px">${done[i] ? '✓' : ''}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:600;${done[i] ? 'text-decoration:line-through' : ''}">${m.name} <span style="font-weight:400;color:var(--text3)">${m.time}</span></div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4">${m.items}</div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0">${m.kcal}</div>
+          </div>`).join('')}
+        <div onclick="event.stopPropagation();switchTab('macros')" style="text-align:center;font-size:11px;font-weight:600;color:var(--accent);padding:8px;cursor:pointer;touch-action:manipulation">Open full nutrition tab →</div>
+      </div>` : ''}
+    </div>`;
+}
+function toggleHomeMealCard() {
+  localStorage.setItem('home_meal_open', localStorage.getItem('home_meal_open') === '1' ? '0' : '1');
+  renderHomeMealCard();
+}
+
 function renderHomeSuppCard() {
   const card = document.getElementById('home-supp-card');
   if (!card) return;
@@ -8774,6 +8868,7 @@ function renderExercises() {
   });
   renderCooldown();
   if (typeof renderHomeSuppCard === 'function') renderHomeSuppCard();
+  if (typeof renderHomeMealCard === 'function') renderHomeMealCard();
 }
 
 function toggleCard(i) {
