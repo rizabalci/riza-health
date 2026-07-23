@@ -817,6 +817,41 @@
   <div class="screen" id="screen-macros">
     <div class="macro-wrap">
       <div class="macro-title">Nutrition</div>
+
+      <!-- LIVE DAILY TRACKER -->
+      <div class="mtrack-header" style="padding:0 0 10px">
+        <div style="font-size:16px;font-weight:700">Today</div>
+        <div class="mtrack-date" id="mtrack-date"></div>
+      </div>
+      <div id="mtrack-status" style="margin-bottom:12px"></div>
+      <div id="mtrack-bars" style="margin-bottom:16px"></div>
+
+      <!-- PHOTO LOGGING -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px">Log a meal</div>
+        <input type="file" id="mtrack-photo" accept="image/*" capture="environment" onchange="analyseFoodPhoto(event)" style="display:none">
+        <div onclick="document.getElementById('mtrack-photo').click()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--accent);color:#000;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;touch-action:manipulation">📷 Photo of my meal</div>
+        <div id="mtrack-photo-status" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center"></div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <div style="font-size:11px;color:var(--text3)">or type it</div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+
+        <input id="mtrack-food" placeholder="e.g. 200g salmon and rice" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:8px">
+        <div onclick="askCoachMacros()" style="text-align:center;font-size:12px;font-weight:600;color:var(--accent);padding:8px;cursor:pointer;touch-action:manipulation">✨ Estimate macros for me</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px">
+          <input id="mtrack-kcal" type="number" inputmode="numeric" placeholder="kcal" style="width:100%;padding:9px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;text-align:center">
+          <input id="mtrack-protein" type="number" inputmode="numeric" placeholder="P" style="width:100%;padding:9px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;text-align:center">
+          <input id="mtrack-carbs" type="number" inputmode="numeric" placeholder="C" style="width:100%;padding:9px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;text-align:center">
+          <input id="mtrack-fat" type="number" inputmode="numeric" placeholder="F" style="width:100%;padding:9px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;text-align:center">
+        </div>
+        <div onclick="addMacroEntry()" style="display:flex;align-items:center;justify-content:center;padding:11px;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;touch-action:manipulation">+ Add to today</div>
+      </div>
+
+      <div id="mtrack-food-list" style="margin-bottom:20px"></div>
+
       <div class="macro-stats-grid">
         <div class="macro-stat-card">
           <div class="macro-stat-label">Daily Calories</div>
@@ -7646,6 +7681,87 @@ function initMacroTracker() {
   if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   renderMacroBars();
   renderMacroFoodList();
+  renderMacroStatus();
+}
+
+// Photo -> Gemini vision -> estimated macros, prefilled for you to confirm
+async function analyseFoodPhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('mtrack-photo-status');
+  const key = getApiKey();
+  if (!key) {
+    if (statusEl) statusEl.textContent = 'Add your Gemini API key in the Coach tab first.';
+    return;
+  }
+  if (statusEl) statusEl.textContent = 'Reading the photo...';
+
+  let base64, mime;
+  try {
+    mime = file.type || 'image/jpeg';
+    base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(',')[1]);
+      r.onerror = () => rej(new Error('read failed'));
+      r.readAsDataURL(file);
+    });
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Could not read that photo. Try again.';
+    return;
+  }
+
+  const prompt = 'You are estimating the nutrition of a meal from a photo. Identify the foods and estimate realistic portion sizes. Assume normal home cooking, including any oil likely used. Reply ONLY with JSON, no other text: {"name":"short description of the meal","kcal":number,"protein":number,"carbs":number,"fat":number}';
+
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [
+          { inline_data: { mime_type: mime, data: base64 } },
+          { text: prompt }
+        ]}],
+        generationConfig: { maxOutputTokens: 200, temperature: 0.2 }
+      })
+    });
+    const data = await res.json();
+    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const m = JSON.parse(raw);
+    document.getElementById('mtrack-food').value = m.name || 'Meal from photo';
+    document.getElementById('mtrack-kcal').value = Math.round(m.kcal) || '';
+    document.getElementById('mtrack-protein').value = Math.round(m.protein) || '';
+    document.getElementById('mtrack-carbs').value = Math.round(m.carbs) || '';
+    document.getElementById('mtrack-fat').value = Math.round(m.fat) || '';
+    if (statusEl) statusEl.textContent = 'Estimate filled in below. Adjust it if the portion looks off, then Add.';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Could not estimate that one. Type it in instead.';
+  } finally {
+    event.target.value = '';
+  }
+}
+
+// Where you stand today, stated plainly. No scolding, just the numbers and what is left.
+function renderMacroStatus() {
+  const el = document.getElementById('mtrack-status');
+  if (!el) return;
+  const entries = getTodayMacros();
+  if (entries.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:10px 12px;background:var(--surface2);border-radius:8px">Nothing logged yet. Target is ${MACRO_TARGETS.kcal} kcal and ${MACRO_TARGETS.protein}g protein.</div>`;
+    return;
+  }
+  const t = entries.reduce((a, e) => ({ kcal: a.kcal + e.kcal, protein: a.protein + e.protein }), { kcal: 0, protein: 0 });
+  const kcalLeft = Math.round(MACRO_TARGETS.kcal - t.kcal);
+  const protLeft = Math.round(MACRO_TARGETS.protein - t.protein);
+  const lines = [];
+  if (kcalLeft > 0) lines.push(`${kcalLeft} kcal left today`);
+  else lines.push(`${Math.abs(kcalLeft)} kcal over target`);
+  if (protLeft > 0) lines.push(`${protLeft}g protein still to hit`);
+  else lines.push('protein target hit');
+  const over = kcalLeft < -250;
+  el.innerHTML = `<div style="font-size:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid ${over ? '#f59e0b' : 'var(--accent)'};line-height:1.5">
+    <span style="font-weight:700;color:${over ? '#f59e0b' : 'var(--accent)'}">${lines[0]}</span> · ${lines[1]}
+    ${over ? '<div style="color:var(--text3);margin-top:4px">One day over target does not undo a week. Carry on as normal tomorrow.</div>' : ''}
+  </div>`;
 }
 
 function addMacroEntry() {
@@ -7660,9 +7776,11 @@ function addMacroEntry() {
   if (!log[today]) log[today] = [];
   log[today].push({ food: food || 'Unknown', kcal, protein, carbs, fat, time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) });
   saveMacroLog(log);
-  ['mtrack-food', 'mtrack-kcal', 'mtrack-protein', 'mtrack-carbs', 'mtrack-fat'].forEach(id => document.getElementById(id).value = '');
+  ['mtrack-food', 'mtrack-kcal', 'mtrack-protein', 'mtrack-carbs', 'mtrack-fat'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const ps = document.getElementById('mtrack-photo-status'); if (ps) ps.textContent = '';
   renderMacroBars();
   renderMacroFoodList();
+  renderMacroStatus();
 }
 
 function deleteMacroEntry(i) {
@@ -7671,12 +7789,14 @@ function deleteMacroEntry(i) {
   if (log[today]) { log[today].splice(i, 1); saveMacroLog(log); }
   renderMacroBars();
   renderMacroFoodList();
+  renderMacroStatus();
 }
 
 function renderMacroBars() {
   const entries = getTodayMacros();
   const totals = entries.reduce((acc, e) => ({ kcal: acc.kcal + e.kcal, protein: acc.protein + e.protein, carbs: acc.carbs + e.carbs, fat: acc.fat + e.fat }), { kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const barsEl = document.getElementById('mtrack-bars');
+  if (!barsEl) return;
   const macros = [
     { key: 'kcal', label: 'Calories', unit: 'kcal', color: MACRO_COLORS.kcal },
     { key: 'protein', label: 'Protein', unit: 'g', color: MACRO_COLORS.protein },
@@ -7701,6 +7821,7 @@ function renderMacroBars() {
 function renderMacroFoodList() {
   const entries = getTodayMacros();
   const listEl = document.getElementById('mtrack-food-list');
+  if (!listEl) return;
   if (entries.length === 0) { listEl.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:10px 0">Nothing logged yet today.</div>'; return; }
   listEl.innerHTML = '';
   entries.slice().reverse().forEach((e, ri) => {
