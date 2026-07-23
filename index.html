@@ -7349,7 +7349,7 @@ function renderHomeMealCard() {
   const doneCount = MEAL_PLAN.filter((m, i) => done[i]).length;
   const kcalDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.kcal : 0), 0);
   const pDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.p : 0), 0);
-  const open = localStorage.getItem('home_meal_open') === '1';
+  const open = localStorage.getItem('home_meal_open') !== '0';
   card.innerHTML = `
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
       <div onclick="toggleHomeMealCard()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;touch-action:manipulation">
@@ -7375,7 +7375,7 @@ function renderHomeMealCard() {
     </div>`;
 }
 function toggleHomeMealCard() {
-  localStorage.setItem('home_meal_open', localStorage.getItem('home_meal_open') === '1' ? '0' : '1');
+  localStorage.setItem('home_meal_open', localStorage.getItem('home_meal_open') === '0' ? '1' : '0');
   renderHomeMealCard();
 }
 
