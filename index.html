@@ -786,6 +786,13 @@
     </div>
   </div>
 
+  <!-- MEAL EDITOR MODAL -->
+  <div id="meal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:18px" onclick="if(event.target===this)closeMealEditor()">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;padding:18px">
+      <div id="meal-edit-body"></div>
+    </div>
+  </div>
+
   <!-- FINISH WORKOUT SUMMARY MODAL -->
   <div id="finish-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px">
     <div style="background:var(--surface);border-radius:16px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;border:1px solid var(--border)">
@@ -7336,6 +7343,130 @@ const MEAL_PLAN = [
 ];
 function getMealDoneKey() { return 'meals_done_' + getTodayKey(); }
 function getMealsDone() { try { return JSON.parse(localStorage.getItem(getMealDoneKey()) || '{}'); } catch(e) { return {}; } }
+
+// ---- Meal modifications: swap or add ingredients and recalculate ----
+function getMealModKey() { return 'meal_mods_' + getTodayKey(); }
+function getMealMods() { try { return JSON.parse(localStorage.getItem(getMealModKey()) || '{}'); } catch(e) { return {}; } }
+function saveMealMod(i, mod) {
+  const m = getMealMods();
+  m[i] = mod;
+  localStorage.setItem(getMealModKey(), JSON.stringify(m));
+}
+function clearMealMod(i) {
+  const m = getMealMods();
+  delete m[i];
+  localStorage.setItem(getMealModKey(), JSON.stringify(m));
+  renderHomeMealCard();
+  showToast('Back to the original meal');
+}
+// The meal as it stands today, original or modified
+function effectiveMeal(i) {
+  const mod = getMealMods()[i];
+  const base = MEAL_PLAN[i];
+  if (!mod) return Object.assign({}, base, { modified: false });
+  return { name: base.name, time: base.time, items: mod.items || base.items, kcal: mod.kcal, p: mod.p, modified: true };
+}
+// Day totals using whatever the meals currently are
+function plannedDayTotals() {
+  let kcal = 0, p = 0;
+  for (let i = 0; i < MEAL_PLAN.length; i++) { const m = effectiveMeal(i); kcal += m.kcal; p += m.p; }
+  return { kcal: Math.round(kcal), p: Math.round(p) };
+}
+
+function openMealEditor(i) {
+  const m = effectiveMeal(i);
+  window._mealEditIdx = i;
+  const ov = document.getElementById('meal-edit-overlay');
+  const body = document.getElementById('meal-edit-body');
+  if (!ov || !body) return;
+  body.innerHTML = `
+    <div style="font-size:16px;font-weight:700;margin-bottom:2px">${m.name}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${m.time}</div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px">
+      ${m.items}<br><span style="color:var(--accent);font-weight:700">${m.kcal} kcal · ${m.p}g protein</span>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px">What do you want to change?</div>
+    <input id="meal-edit-input" placeholder="e.g. add half an avocado and mushrooms" style="width:100%;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
+    <div onclick="recalcMeal()" style="display:flex;align-items:center;justify-content:center;padding:12px;background:var(--accent);color:#000;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-top:10px;touch-action:manipulation">✨ Recalculate</div>
+    <div id="meal-edit-result" style="margin-top:12px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      ${m.modified ? `<div onclick="clearMealMod(${i});closeMealEditor()" style="flex:1;text-align:center;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;touch-action:manipulation">Reset meal</div>` : ''}
+      <div onclick="closeMealEditor()" style="flex:1;text-align:center;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;touch-action:manipulation">Close</div>
+    </div>`;
+  ov.style.display = 'flex';
+}
+function closeMealEditor() {
+  const ov = document.getElementById('meal-edit-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
+async function recalcMeal() {
+  const i = window._mealEditIdx;
+  const inp = document.getElementById('meal-edit-input');
+  const out = document.getElementById('meal-edit-result');
+  if (i === undefined || !inp || !out) return;
+  const change = inp.value.trim();
+  if (!change) { out.innerHTML = '<div style="font-size:12px;color:var(--text3)">Type what you are changing first.</div>'; return; }
+  const key = getApiKey();
+  if (!key) { out.innerHTML = '<div style="font-size:12px;color:var(--text3)">Needs your Gemini key. <span onclick="closeMealEditor();switchTab(\'coach\')" style="color:var(--accent);font-weight:700;text-decoration:underline;cursor:pointer">Open the Coach tab</span> and paste it there.</div>'; return; }
+  const m = effectiveMeal(i);
+  out.innerHTML = '<div style="font-size:12px;color:var(--text3)">Working it out...</div>';
+
+  const prompt = `Current meal: ${m.items} (${m.kcal} kcal, ${m.p}g protein).
+The person wants this change: ${change}
+Work out the new meal and its nutrition. Assume normal portions and any cooking oil.
+Reply ONLY with JSON, no other text:
+{"items":"the full new meal description","kcal":number,"protein":number,"note":"one short sentence on the swap, plain and practical"}`;
+
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 300, temperature: 0.2 } })
+    });
+    const data = await res.json();
+    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const r = JSON.parse(raw);
+    const newKcal = Math.round(r.kcal), newP = Math.round(r.protein);
+    const dK = newKcal - m.kcal, dP = newP - m.p;
+
+    // What the whole day looks like if this change sticks
+    let dayK = 0, dayP = 0;
+    for (let j = 0; j < MEAL_PLAN.length; j++) {
+      const em = (j === i) ? { kcal: newKcal, p: newP } : effectiveMeal(j);
+      dayK += em.kcal; dayP += em.p;
+    }
+    dayK = Math.round(dayK); dayP = Math.round(dayP);
+    const overBy = dayK - MACRO_TARGETS.kcal;
+
+    let verdict, colour, advice = '';
+    if (overBy <= 100) { verdict = 'Fits your day'; colour = '#22c55e'; }
+    else if (overBy <= 350) { verdict = `Puts you ${overBy} over`; colour = '#f59e0b'; advice = 'Easy fix: drop the almonds this evening or trim the oats by 20g and you are level.'; }
+    else { verdict = `Puts you ${overBy} over`; colour = '#f59e0b'; advice = 'That is a big jump. Trim carbs elsewhere today, or just take it as a higher day and carry on tomorrow.'; }
+    if (dayP < MACRO_TARGETS.protein - 15) advice += (advice ? ' ' : '') + `Protein drops to ${dayP}g, so add a shake or more skyr to stay near ${MACRO_TARGETS.protein}g.`;
+
+    out.innerHTML = `
+      <div style="background:var(--surface2);border-radius:8px;padding:11px;font-size:12px;color:var(--text2);line-height:1.5">
+        ${r.items}<br>
+        <span style="color:var(--accent);font-weight:700">${newKcal} kcal · ${newP}g protein</span>
+        <span style="color:var(--text3)"> (${dK >= 0 ? '+' : ''}${dK} kcal, ${dP >= 0 ? '+' : ''}${dP}g protein)</span>
+      </div>
+      <div style="margin-top:8px;padding:10px 11px;background:var(--surface2);border-left:3px solid ${colour};border-radius:8px;font-size:12px;line-height:1.5">
+        <span style="font-weight:700;color:${colour}">${verdict}</span> · day would be ${dayK} kcal, ${dayP}g protein
+        ${advice ? `<div style="color:var(--text3);margin-top:4px">${advice}</div>` : ''}
+        ${r.note ? `<div style="color:var(--text3);margin-top:4px">${r.note}</div>` : ''}
+      </div>
+      <div onclick='applyMealMod(${i}, ${JSON.stringify(JSON.stringify({ items: r.items, kcal: newKcal, p: newP }))})' style="display:flex;align-items:center;justify-content:center;padding:12px;background:#22c55e;color:#000;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer;margin-top:10px;touch-action:manipulation">Use this version today</div>`;
+  } catch (e) {
+    out.innerHTML = '<div style="font-size:12px;color:var(--text3)">Could not work that one out. Try describing it differently.</div>';
+  }
+}
+function applyMealMod(i, json) {
+  try { saveMealMod(i, JSON.parse(json)); } catch(e) { return; }
+  renderHomeMealCard();
+  closeMealEditor();
+  showToast('Meal updated for today');
+}
 function toggleMealDone(i) {
   const d = getMealsDone();
   d[i] = !d[i];
@@ -7346,9 +7477,11 @@ function renderHomeMealCard() {
   const card = document.getElementById('home-meal-card');
   if (!card) return;
   const done = getMealsDone();
-  const doneCount = MEAL_PLAN.filter((m, i) => done[i]).length;
-  const kcalDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.kcal : 0), 0);
-  const pDone = MEAL_PLAN.reduce((a, m, i) => a + (done[i] ? m.p : 0), 0);
+  const meals = MEAL_PLAN.map((m, i) => effectiveMeal(i));
+  const doneCount = meals.filter((m, i) => done[i]).length;
+  const kcalDone = meals.reduce((a, m, i) => a + (done[i] ? m.kcal : 0), 0);
+  const pDone = meals.reduce((a, m, i) => a + (done[i] ? m.p : 0), 0);
+  const planned = plannedDayTotals();
   const open = localStorage.getItem('home_meal_open') !== '0';
   card.innerHTML = `
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
@@ -7361,15 +7494,19 @@ function renderHomeMealCard() {
         <span style="font-size:12px;color:var(--text3)">${open ? '▴' : '▾'}</span>
       </div>
       ${open ? `<div style="padding:0 12px 12px">
-        ${MEAL_PLAN.map((m, i) => `
-          <div onclick="toggleMealDone(${i})" style="display:flex;gap:10px;align-items:flex-start;padding:9px 10px;margin-bottom:6px;background:var(--surface2);border-radius:8px;cursor:pointer;touch-action:manipulation;opacity:${done[i] ? 0.55 : 1}">
-            <div style="width:19px;height:19px;flex-shrink:0;border-radius:5px;border:1.5px solid ${done[i] ? 'var(--accent)' : 'var(--border)'};background:${done[i] ? 'var(--accent)' : 'transparent'};color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px">${done[i] ? '✓' : ''}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:12px;font-weight:600;${done[i] ? 'text-decoration:line-through' : ''}">${m.name} <span style="font-weight:400;color:var(--text3)">${m.time}</span></div>
+        ${meals.map((m, i) => `
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 10px;margin-bottom:6px;background:var(--surface2);border-radius:8px;opacity:${done[i] ? 0.55 : 1}">
+            <div onclick="toggleMealDone(${i})" style="width:19px;height:19px;flex-shrink:0;border-radius:5px;border:1.5px solid ${done[i] ? 'var(--accent)' : 'var(--border)'};background:${done[i] ? 'var(--accent)' : 'transparent'};color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px;cursor:pointer;touch-action:manipulation">${done[i] ? '✓' : ''}</div>
+            <div onclick="toggleMealDone(${i})" style="flex:1;min-width:0;cursor:pointer;touch-action:manipulation">
+              <div style="font-size:12px;font-weight:600;${done[i] ? 'text-decoration:line-through' : ''}">${m.name} <span style="font-weight:400;color:var(--text3)">${m.time}</span>${m.modified ? ' <span style="font-size:9px;color:var(--accent);font-weight:700">EDITED</span>' : ''}</div>
               <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4">${m.items}</div>
             </div>
-            <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0">${m.kcal}</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+              <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${m.kcal}</div>
+              <div onclick="event.stopPropagation();openMealEditor(${i})" style="font-size:13px;padding:2px 4px;cursor:pointer;touch-action:manipulation">✏️</div>
+            </div>
           </div>`).join('')}
+        <div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0 2px">Planned day: ${planned.kcal} kcal · ${planned.p}g protein</div>
         <div onclick="event.stopPropagation();switchTab('macros')" style="text-align:center;font-size:11px;font-weight:600;color:var(--accent);padding:8px;cursor:pointer;touch-action:manipulation">Open full nutrition tab →</div>
       </div>` : ''}
     </div>`;
@@ -7783,27 +7920,47 @@ async function analyseFoodPhoto(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
   const statusEl = document.getElementById('mtrack-photo-status');
+  const setStatus = (html) => { if (statusEl) statusEl.innerHTML = html; };
   const key = getApiKey();
   if (!key) {
-    if (statusEl) statusEl.textContent = 'Add your Gemini API key in the Coach tab first.';
+    setStatus('Needs your Gemini key. <span onclick="switchTab(\'coach\')" style="color:var(--accent);font-weight:700;text-decoration:underline;cursor:pointer">Open the Coach tab</span> and paste it there, then come back.');
     return;
   }
-  if (statusEl) statusEl.textContent = 'Reading the photo...';
+  setStatus('Reading the photo...');
 
-  let base64, mime;
+  // iPhone photos are huge and often HEIC. Draw to a canvas to shrink them
+  // and force JPEG, which keeps the upload small and the format supported.
+  let base64;
   try {
-    mime = file.type || 'image/jpeg';
-    base64 = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(String(r.result).split(',')[1]);
-      r.onerror = () => rej(new Error('read failed'));
-      r.readAsDataURL(file);
+    base64 = await new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const MAX = 1024;
+          let { width: w, height: h } = img;
+          if (w > MAX || h > MAX) {
+            const scale = MAX / Math.max(w, h);
+            w = Math.round(w * scale); h = Math.round(h * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          URL.revokeObjectURL(url);
+          resolve(dataUrl.split(',')[1]);
+        } catch (err) { URL.revokeObjectURL(url); reject(err); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not open that image')); };
+      img.src = url;
     });
   } catch (e) {
-    if (statusEl) statusEl.textContent = 'Could not read that photo. Try again.';
+    setStatus('Could not read that photo. Try taking it again, or type the meal instead.');
+    event.target.value = '';
     return;
   }
 
+  setStatus('Working out the macros...');
   const prompt = 'You are estimating the nutrition of a meal from a photo. Identify the foods and estimate realistic portion sizes. Assume normal home cooking, including any oil likely used. Reply ONLY with JSON, no other text: {"name":"short description of the meal","kcal":number,"protein":number,"carbs":number,"fat":number}';
 
   try {
@@ -7812,23 +7969,41 @@ async function analyseFoodPhoto(event) {
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [
-          { inline_data: { mime_type: mime, data: base64 } },
+          { inline_data: { mime_type: 'image/jpeg', data: base64 } },
           { text: prompt }
         ]}],
-        generationConfig: { maxOutputTokens: 200, temperature: 0.2 }
+        generationConfig: { maxOutputTokens: 300, temperature: 0.2 }
       })
     });
     const data = await res.json();
+
+    if (data.error) {
+      setStatus('Gemini said: ' + (data.error.message || 'request rejected') + '. If it mentions the key, paste a fresh one in the Coach tab.');
+      event.target.value = '';
+      return;
+    }
     const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
-    const m = JSON.parse(raw);
-    document.getElementById('mtrack-food').value = m.name || 'Meal from photo';
-    document.getElementById('mtrack-kcal').value = Math.round(m.kcal) || '';
-    document.getElementById('mtrack-protein').value = Math.round(m.protein) || '';
-    document.getElementById('mtrack-carbs').value = Math.round(m.carbs) || '';
-    document.getElementById('mtrack-fat').value = Math.round(m.fat) || '';
-    if (statusEl) statusEl.textContent = 'Estimate filled in below. Adjust it if the portion looks off, then Add.';
+    if (!raw) {
+      setStatus('No answer came back. Try a clearer photo, or type the meal instead.');
+      event.target.value = '';
+      return;
+    }
+    let m;
+    try { m = JSON.parse(raw); }
+    catch (err) {
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) { setStatus('Could not read the answer. Type the meal instead.'); event.target.value = ''; return; }
+      m = JSON.parse(match[0]);
+    }
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set('mtrack-food', m.name || 'Meal from photo');
+    set('mtrack-kcal', Math.round(m.kcal) || '');
+    set('mtrack-protein', Math.round(m.protein) || '');
+    set('mtrack-carbs', Math.round(m.carbs) || '');
+    set('mtrack-fat', Math.round(m.fat) || '');
+    setStatus('<span style="color:#f59e0b;font-weight:700">Not saved yet.</span> Check the numbers below, then tap <strong>+ Add to today</strong> to save it.');
   } catch (e) {
-    if (statusEl) statusEl.textContent = 'Could not estimate that one. Type it in instead.';
+    setStatus('Connection problem: ' + (e.message || 'could not reach Gemini') + '. Check your signal and try again.');
   } finally {
     event.target.value = '';
   }
@@ -7870,11 +8045,16 @@ function addMacroEntry() {
   if (!log[today]) log[today] = [];
   log[today].push({ food: food || 'Unknown', kcal, protein, carbs, fat, time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) });
   saveMacroLog(log);
+  const savedName = food || 'Meal';
+  const savedKcal = kcal;
   ['mtrack-food', 'mtrack-kcal', 'mtrack-protein', 'mtrack-carbs', 'mtrack-fat'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  const ps = document.getElementById('mtrack-photo-status'); if (ps) ps.textContent = '';
+  const ps = document.getElementById('mtrack-photo-status');
+  if (ps) ps.innerHTML = `<span style="color:#22c55e;font-weight:700">✓ Saved.</span> ${savedName}, ${Math.round(savedKcal)} kcal, added to Today's food below.`;
   renderMacroBars();
   renderMacroFoodList();
   renderMacroStatus();
+  showToast('Saved to today');
+  setTimeout(() => { const l = document.getElementById('mtrack-food-list'); if (l && l.scrollIntoView) l.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
 }
 
 function deleteMacroEntry(i) {
@@ -7916,8 +8096,9 @@ function renderMacroFoodList() {
   const entries = getTodayMacros();
   const listEl = document.getElementById('mtrack-food-list');
   if (!listEl) return;
-  if (entries.length === 0) { listEl.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:10px 0">Nothing logged yet today.</div>'; return; }
-  listEl.innerHTML = '';
+  const header = `<div style="font-size:13px;font-weight:700;margin-bottom:8px">Today's food <span style="font-weight:400;color:var(--text3);font-size:11px">(${entries.length} logged)</span></div>`;
+  if (entries.length === 0) { listEl.innerHTML = header + '<div style="color:var(--text3);font-size:12px;padding:8px 10px;background:var(--surface2);border-radius:8px">Nothing saved yet today. Anything you log will appear here.</div>'; return; }
+  listEl.innerHTML = header;
   entries.slice().reverse().forEach((e, ri) => {
     const i = entries.length - 1 - ri;
     const div = document.createElement('div');
