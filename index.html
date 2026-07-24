@@ -8048,13 +8048,33 @@ function renderMacroStatus() {
   </div>`;
 }
 
-function addMacroEntry() {
+async function addMacroEntry() {
   const food = document.getElementById('mtrack-food').value.trim();
-  const kcal = parseFloat(document.getElementById('mtrack-kcal').value) || 0;
-  const protein = parseFloat(document.getElementById('mtrack-protein').value) || 0;
-  const carbs = parseFloat(document.getElementById('mtrack-carbs').value) || 0;
-  const fat = parseFloat(document.getElementById('mtrack-fat').value) || 0;
+  let kcal = parseFloat(document.getElementById('mtrack-kcal').value) || 0;
+  let protein = parseFloat(document.getElementById('mtrack-protein').value) || 0;
+  let carbs = parseFloat(document.getElementById('mtrack-carbs').value) || 0;
+  let fat = parseFloat(document.getElementById('mtrack-fat').value) || 0;
   if (!food && !kcal) { showToast('Enter food name or calories'); return; }
+
+  // Typed a food but left the numbers blank: work them out first rather than
+  // silently saving a row of zeros.
+  if (food && !kcal && !protein && !carbs && !fat) {
+    const ps0 = document.getElementById('mtrack-photo-status');
+    if (!getApiKey()) {
+      if (ps0) ps0.innerHTML = 'Type the calories in yourself, or <span onclick="switchTab(\'coach\')" style="color:var(--accent);font-weight:700;text-decoration:underline;cursor:pointer">add your Gemini key</span> to have it worked out for you.';
+      return;
+    }
+    if (ps0) ps0.textContent = 'Working out the macros for ' + food + '...';
+    const ok = await askCoachMacros();
+    kcal = parseFloat(document.getElementById('mtrack-kcal').value) || 0;
+    protein = parseFloat(document.getElementById('mtrack-protein').value) || 0;
+    carbs = parseFloat(document.getElementById('mtrack-carbs').value) || 0;
+    fat = parseFloat(document.getElementById('mtrack-fat').value) || 0;
+    if (!ok || (!kcal && !protein)) {
+      if (ps0) ps0.innerHTML = '<span style="color:#f59e0b;font-weight:700">Could not work that one out.</span> Type the calories in the kcal box and tap Add again.';
+      return;
+    }
+  }
   const log = getMacroLog();
   const today = getTodayKey();
   if (!log[today]) log[today] = [];
@@ -8144,12 +8164,13 @@ async function askCoachMacros() {
     const data = await res.json();
     const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
     const macros = JSON.parse(raw);
-    document.getElementById('mtrack-kcal').value = macros.kcal || '';
-    document.getElementById('mtrack-protein').value = macros.protein || '';
-    document.getElementById('mtrack-carbs').value = macros.carbs || '';
-    document.getElementById('mtrack-fat').value = macros.fat || '';
+    document.getElementById('mtrack-kcal').value = Math.round(macros.kcal) || '';
+    document.getElementById('mtrack-protein').value = Math.round(macros.protein) || '';
+    document.getElementById('mtrack-carbs').value = Math.round(macros.carbs) || '';
+    document.getElementById('mtrack-fat').value = Math.round(macros.fat) || '';
     showToast('Macros filled in');
-  } catch(e) { showToast('Could not get macros. Enter manually.'); }
+    return true;
+  } catch(e) { showToast('Could not get macros. Enter manually.'); return false; }
 }
 
 
