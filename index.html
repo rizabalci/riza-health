@@ -7422,7 +7422,7 @@ Reply ONLY with JSON, no other text:
     const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 300, temperature: 0.2 } })
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 800, temperature: 0.2, thinkingConfig: { thinkingBudget: 0 } } })
     });
     const data = await res.json();
     const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
@@ -7961,7 +7961,10 @@ async function analyseFoodPhoto(event) {
   }
 
   setStatus('Working out the macros...');
-  const prompt = 'You are estimating the nutrition of a meal from a photo. Identify the foods and estimate realistic portion sizes. Assume normal home cooking, including any oil likely used. Reply ONLY with JSON, no other text: {"name":"short description of the meal","kcal":number,"protein":number,"carbs":number,"fat":number}';
+  const prompt = 'Look at this photo and decide first whether it actually shows food or drink.\n' +
+    'If it does NOT show food or drink (a person, a room, a screen, an object, a pet, anything else), reply ONLY with: {"notFood":true}\n' +
+    'If it DOES show food or drink, identify the items and estimate realistic portion sizes, assuming normal home cooking including any oil likely used. Water, black coffee, plain tea and other zero-calorie drinks should return zeros.\n' +
+    'Reply ONLY with JSON, no other text: {"name":"short description","kcal":number,"protein":number,"carbs":number,"fat":number}';
 
   try {
     const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
@@ -7972,7 +7975,7 @@ async function analyseFoodPhoto(event) {
           { inline_data: { mime_type: 'image/jpeg', data: base64 } },
           { text: prompt }
         ]}],
-        generationConfig: { maxOutputTokens: 300, temperature: 0.2 }
+        generationConfig: { maxOutputTokens: 800, temperature: 0.2, thinkingConfig: { thinkingBudget: 0 } }
       })
     });
     const data = await res.json();
@@ -7984,7 +7987,10 @@ async function analyseFoodPhoto(event) {
     }
     const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
     if (!raw) {
-      setStatus('No answer came back. Try a clearer photo, or type the meal instead.');
+      const reason = data.candidates?.[0]?.finishReason;
+      if (reason === 'MAX_TOKENS') setStatus('The answer got cut off. Try a simpler photo with fewer items, or type the meal instead.');
+      else if (reason === 'SAFETY') setStatus('That image was blocked. Type the meal instead.');
+      else setStatus('No answer came back' + (reason ? ' (' + reason + ')' : '') + '. Try a clearer photo, or type the meal instead.');
       event.target.value = '';
       return;
     }
@@ -7995,13 +8001,22 @@ async function analyseFoodPhoto(event) {
       if (!match) { setStatus('Could not read the answer. Type the meal instead.'); event.target.value = ''; return; }
       m = JSON.parse(match[0]);
     }
+    if (m && m.notFood) {
+      setStatus('<span style="color:#f59e0b;font-weight:700">That does not look like food.</span> Point the camera at your meal or drink and try again.');
+      event.target.value = '';
+      return;
+    }
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     set('mtrack-food', m.name || 'Meal from photo');
     set('mtrack-kcal', Math.round(m.kcal) || '');
     set('mtrack-protein', Math.round(m.protein) || '');
     set('mtrack-carbs', Math.round(m.carbs) || '');
     set('mtrack-fat', Math.round(m.fat) || '');
-    setStatus('<span style="color:#f59e0b;font-weight:700">Not saved yet.</span> Check the numbers below, then tap <strong>+ Add to today</strong> to save it.');
+    if ((Math.round(m.kcal) || 0) === 0) {
+      setStatus('<span style="color:var(--accent);font-weight:700">Zero calories.</span> Nothing to count, but you can still add it if you want it in the list.');
+    } else {
+      setStatus('<span style="color:#f59e0b;font-weight:700">Not saved yet.</span> Check the numbers below, then tap <strong>+ Add to today</strong> to save it.');
+    }
   } catch (e) {
     setStatus('Connection problem: ' + (e.message || 'could not reach Gemini') + '. Check your signal and try again.');
   } finally {
@@ -8124,7 +8139,7 @@ async function askCoachMacros() {
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 100, temperature: 0.1 } })
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 400, temperature: 0.1, thinkingConfig: { thinkingBudget: 0 } } })
     });
     const data = await res.json();
     const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim();
